@@ -1,0 +1,25 @@
+
+User (users) {
+    
+    email text
+    password text
+    firstName text
+    lastName text
+    created timestamp
+    fullName { firstName || ' ' || lastName }
+    
+    static find_all() {
+        SELECT * FROM users
+    }
+
+    static find_by_id($id) {
+        SELECT * FROM users WHERE id = $id
+    }
+    
+    static insert(*) {
+        INSERT INTO users (email, password, firstName, lastName, created)
+            VALUES ($email, $password, $firstName, $lastName, NOW())
+    }
+    
+    find_messages() -> Message::find_all_by_user($id)
+}
