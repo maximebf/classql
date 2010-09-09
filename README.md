@@ -1,6 +1,8 @@
-# NameToBeDetermined
+# PSQL (A better name as yet to be found!)
 
-NameToBeDetermined is a new kind of ORM for PHP 5.3. Based on a custom syntax that wraps around SQL code, it allows
+THIS IS A WORK IN PROGRESS AND IN A STATE OF EXPERIMENTATION
+
+PSQL is a new kind of ORM for PHP 5.3. Based on a custom syntax that wraps around SQL code, it allows
 to create "object oriented" sql. No PHP is involved in your models: you define them in SQL!
 
 ## Features
@@ -42,10 +44,8 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
     Message (messages) {
 
         id int
-        user_id int
+        user_id int references users(id)
         message text
-        
-        foreign key messages_user_id_users_id on user_id references users(id)
 
         static find_all_by_user_id($id) {
             SELECT * FROM messages WHERE user_id = $id
@@ -70,16 +70,16 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
     
 ## Models definition syntax
 
-[@Attribute]
-ModelName {
-
-    field_declaration
-    constraint_declaration
-    
     [@Attribute]
-    [static] function_name (params...) {
-        sql_query
-    }
+    ModelName {
 
-}
+        field_declaration
+        constraint_declaration
+        
+        [@Attribute]
+        [static] function_name (params...) {
+            sql_query
+        }
+
+    }
 
