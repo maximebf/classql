@@ -2,7 +2,7 @@
 
 namespace PSQL\ParserContexts;
 
-use \ParseInContext\Context;
+use \PSQL\Context;
 
 class Method extends Context
 {

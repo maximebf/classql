@@ -2,7 +2,7 @@
 
 namespace PSQL\ParserContexts;
 
-use \ParseInContext\CatchAllContext;
+use \PSQL\CatchAllContext;
 
 class Column extends CatchAllContext
 {

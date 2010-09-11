@@ -10,4 +10,4 @@ require_once 'ParseInContext/ContextFactory.php';
 \ParseInContext\ContextFactory::registerAutoloader();
 
 $parser = new \PSQL\Parser();
-var_dump($parser->parseFile(__DIR__ . '/../demo/Message.psql'));
+var_dump($parser->parseFile(__DIR__ . '/../demo/User.psql'));

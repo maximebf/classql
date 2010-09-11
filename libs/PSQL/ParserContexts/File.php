@@ -2,37 +2,23 @@
 
 namespace PSQL\ParserContexts;
 
-use \ParseInContext\Context;
+use \PSQL\Context;
 
 class File extends Context
 {
-    protected $_latestAttributes = array();
-    
     protected $_nextClassName = null;
     
     protected $_classes = array();
     
-    public function tokenAttribute($value)
-    {
-        $this->_latestAttributes[] = $value;
-    }
-    
     public function tokenString($value)
     {
-        if ($this->_nextClassName === null) {
-            $this->_nextClassName = $value;
-        }
-    }
-    
-    public function tokenCurlyOpen()
-    {
-        $class = $this->enterContext('Klass');
-        $class['name'] = $this->_nextClassName;
+        $class = $this->enterContext('ClassProto');
+        $class['name'] = $value;
         $class['attributes'] = $this->_latestAttributes;
+        $class['modifiers'] = $this->_latestModifiers;
         
-        $this->_latestAttributes = array();
-        $this->_classes[$this->_nextClassName] = $class;
-        $this->_nextClassName = null;
+        $this->_classes[$value] = $class;
+        $this->_resetLatests();
     }
     
     public function tokenEos()

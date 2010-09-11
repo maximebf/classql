@@ -1,5 +1,5 @@
 
-Message (messages) {
+Message {
 
     user_id int references users(id)
     message text
