@@ -8,8 +8,8 @@ class Method extends Context
 {
     public function tokenCurlyOpen()
     {
-        $sql = $this->enterContext('Sql');
-        $this->exitContext(array('sql' => $sql));
+        $query = $this->enterContext('Query');
+        $this->exitContext(array('query' => $query));
     }
     
     public function tokenPointer()

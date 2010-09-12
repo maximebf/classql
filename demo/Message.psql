@@ -1,8 +1,10 @@
 
+namespace Models
+
 Message {
 
-    user_id int references users(id)
-    message text
+    user_id int references users(id);
+    message text;
 
     static find_all_by_user_id($id) {
         SELECT * FROM messages WHERE user_id = $id

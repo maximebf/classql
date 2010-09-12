@@ -1,4 +1,6 @@
 
+namespace Models
+
 abstract User {
     
     id int

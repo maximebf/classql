@@ -40,4 +40,24 @@ class Context extends BaseContext
         $this->_latestAttributes = array();
         $this->_latestModifiers = array();
     }
+    
+    public function tokenEol()
+    {
+        
+    }
+    
+    public function tokenWhitespace()
+    {
+        
+    }
+    
+    public function __call($method, $args)
+    {
+        $this->_syntaxError(lcfirst(substr($method, 5)));
+    }
+    
+    protected function _syntaxError($token)
+    {
+        throw new ParserException("Syntax error, unexpected token $token");
+    }
 }

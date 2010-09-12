@@ -17,11 +17,17 @@ class Parser extends StringParser
     
     public function parse($string)
     {
-        return parent::parse($string, 'File');
+        $raw = parent::parse($string, 'File');
+        return $this->_compute($raw);
     }
     
     public function parseFile($filename)
     {
         return $this->parse(file_get_contents($filename));
+    }
+    
+    protected function _compute($raw)
+    {
+        return $raw;
     }
 }

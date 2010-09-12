@@ -4,7 +4,7 @@ namespace PSQL\ParserContexts;
 
 use \PSQL\Context;
 
-class ClassBody extends Context
+class ModelBody extends Context
 {
     protected $_columns = array();
     
@@ -19,9 +19,28 @@ class ClassBody extends Context
             return;
         }
         
-        $column = $this->enterContext('Column');
-        $column['name'] = $this->_nextName;
-        $column['type'] = $value;
+        $sql = $this->enterContext('Line');
+        $column = array(
+            'name' => $this->_nextName,
+            'type' => $value,
+            'sql' => trim($this->_nextName . ' ' . $value . $sql)
+        );
+        
+        $this->_columns[$this->_nextName] = $column;
+        $this->_nextName = null;
+    }
+    
+    public function tokenCurlyOpen()
+    {
+        if ($this->_nextName === null) {
+            $this->_syntaxError('curlyOpen');
+        }
+        
+        $column = array(
+            'name' => $this->_nextName,
+            'type' => 'composite',
+            'value' => $this->enterContext('CompositeColumn')
+        );
         
         $this->_columns[$this->_nextName] = $column;
         $this->_nextName = null;

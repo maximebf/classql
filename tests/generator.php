@@ -10,4 +10,7 @@ require_once 'ParseInContext/ContextFactory.php';
 \ParseInContext\ContextFactory::registerAutoloader();
 
 $parser = new \PSQL\Parser();
-var_dump($parser->parseFile($_SERVER['argv'][1]));
+$generator = new \PSQL\Generator();
+
+$descriptor = $parser->parseFile($_SERVER['argv'][1]);
+var_dump($generator->generate($descriptor));
