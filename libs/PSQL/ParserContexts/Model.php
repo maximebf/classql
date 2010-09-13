@@ -4,7 +4,7 @@ namespace PSQL\ParserContexts;
 
 use \PSQL\Context;
 
-class ModelBody extends Context
+class Model extends Context
 {
     protected $_columns = array();
     
@@ -39,7 +39,7 @@ class ModelBody extends Context
         $column = array(
             'name' => $this->_nextName,
             'type' => 'composite',
-            'value' => $this->enterContext('CompositeColumn')
+            'value' => $this->enterContext('SqlBlock')
         );
         
         $this->_columns[$this->_nextName] = $column;
@@ -49,7 +49,7 @@ class ModelBody extends Context
     public function tokenParenthOpen()
     {
         $params = $this->enterContext('Parameters');
-        $method = $this->enterContext('Method');
+        $method = $this->enterContext('Operation');
         $method['name'] = $this->_nextName;
         $method['modifiers'] = $this->_latestModifiers;
         $method['params'] = $params;

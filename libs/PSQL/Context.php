@@ -41,6 +41,15 @@ class Context extends BaseContext
         $this->_latestModifiers = array();
     }
     
+    public function tokenComment() {
+        $this->enterContext('Comment');
+    }
+    
+    public function tokenCommentOpen()
+    {
+        $this->enterContext('MultilineComment');
+    }
+    
     public function tokenEol()
     {
         

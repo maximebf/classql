@@ -10,6 +10,9 @@ class UseDeclaration extends Context
     
     public function tokenString($value)
     {
+        if (!empty($this->_uses)) {
+            $this->_syntaxError('string');
+        }
         $this->_uses[] = $value;
     }
     

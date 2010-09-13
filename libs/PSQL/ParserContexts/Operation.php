@@ -4,7 +4,7 @@ namespace PSQL\ParserContexts;
 
 use \PSQL\Context;
 
-class Method extends Context
+class Operation extends Context
 {
     public function tokenCurlyOpen()
     {

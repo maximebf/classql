@@ -10,9 +10,4 @@ class Line extends CatchAllContext
     {
         $this->exitContext($this->_value);
     }
-    
-    public function tokenEol()
-    {
-        $this->exitContext($this->_value);
-    }
 }

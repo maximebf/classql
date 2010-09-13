@@ -10,7 +10,7 @@ class File extends Context
     
     protected $_uses = array();
     
-    protected $_models = array();
+    protected $_objects = array();
     
     public function tokenNamespace()
     {
@@ -24,12 +24,12 @@ class File extends Context
     
     public function tokenString($value)
     {
-        $model = $this->enterContext('ModelProto');
-        $model['name'] = $value;
-        $model['attributes'] = $this->_latestAttributes;
-        $model['modifiers'] = $this->_latestModifiers;
+        $object = $this->enterContext('Prototype');
+        $object['name'] = $value;
+        $object['attributes'] = $this->_latestAttributes;
+        $object['modifiers'] = $this->_latestModifiers;
         
-        $this->_models[$value] = $model;
+        $this->_objects[$value] = $object;
         $this->_resetLatests();
     }
     
@@ -38,7 +38,7 @@ class File extends Context
         $this->exitContext(array(
             'namespace' => $this->_namespace,
             'uses' => $this->_uses,
-            'models' => $this->_models
+            'objects' => $this->_objects
         ));
     }
 }

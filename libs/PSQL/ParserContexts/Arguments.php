@@ -10,6 +10,10 @@ class Arguments extends Context
     
     public function tokenValue($value)
     {
+        if (!empty($this->_args)) {
+            $this->_syntaxError('value');
+        }
+        
         $this->_args[] = array(
             'type' => 'scalar', 
             'value' => str_replace('\\"', '"', trim($value, '"'))
@@ -18,6 +22,10 @@ class Arguments extends Context
     
     public function tokenString($value)
     {
+        if (!empty($this->_args)) {
+            $this->_syntaxError('string');
+        }
+        
         $this->_args[] = array(
             'type' => 'identifier', 
             'value' => $value
@@ -26,10 +34,19 @@ class Arguments extends Context
     
     public function tokenVariable($value)
     {
+        if (!empty($this->_args)) {
+            $this->_syntaxError('variable');
+        }
+        
         $this->_args[] = array(
             'type' => 'variable', 
             'value' => substr($value, 1)
         );
+    }
+    
+    public function tokenComma()
+    {
+        $this->exitContext(array_merge($this->_args, $this->enterContext('Arguments')));
     }
     
     public function tokenParenthClose()

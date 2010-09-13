@@ -2,9 +2,7 @@
 
 namespace PSQL\ParserContexts;
 
-use \PSQL\CatchAllContext;
-
-class Query extends CatchAllContext
+class Query extends SqlBlock
 {
     protected $_vars = array();
     
@@ -16,6 +14,11 @@ class Query extends CatchAllContext
     
     public function tokenCurlyClose()
     {
+        if ($this->_curlyCount-- > 1) {
+            $this->_value .= '}';
+            return;
+        }
+        
         $this->exitContext(array(
             'sql' => trim($this->_value),
             'vars' => $this->_vars

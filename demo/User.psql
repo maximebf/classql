@@ -1,14 +1,14 @@
 
-namespace Models
+namespace Models;
 
 abstract User {
     
-    id int
-    email text
-    password text
-    firstName text
-    lastName text
-    created timestamp
+    id int;
+    email text;
+    password text;
+    firstName text;
+    lastName text;
+    created timestamp;
     fullName { firstName || ' ' || lastName }
     
     static find_all() {
@@ -28,7 +28,7 @@ abstract User {
 }
 
 Member as members extends User {
-    role int
+    role int;
     
     become_admin() {
         UPDATE members SET role = 2 WHERE id = $id
