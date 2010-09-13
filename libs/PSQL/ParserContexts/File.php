@@ -8,11 +8,18 @@ class File extends Context
 {
     protected $_namespace;
     
+    protected $_uses = array();
+    
     protected $_models = array();
     
     public function tokenNamespace()
     {
         $this->_namespace = trim($this->enterContext('Line'));
+    }
+    
+    public function tokenUse()
+    {
+        $this->_uses = array_merge($this->_uses, $this->enterContext('UseDeclaration'));
     }
     
     public function tokenString($value)
@@ -30,6 +37,7 @@ class File extends Context
     {
         $this->exitContext(array(
             'namespace' => $this->_namespace,
+            'uses' => $this->_uses,
             'models' => $this->_models
         ));
     }

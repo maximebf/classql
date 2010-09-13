@@ -18,6 +18,7 @@ class Lexer extends BaseLexer
             'private' => 'private',
             'virtual' => 'virtual',
             'namespace' => 'namespace',
+            'use' => 'use',
             'as' => 'as',
             'extends' => 'extends',
             'implements' => 'implements',
