@@ -4,7 +4,7 @@ namespace PSQL\ParserContexts;
 
 use \PSQL\CatchAllContext;
 
-class SqlBlock extends CatchAllContext
+class Block extends CatchAllContext
 {
     protected $_curlyCount = 1;
     
@@ -16,7 +16,7 @@ class SqlBlock extends CatchAllContext
     
     public function tokenCurlyClose()
     {
-        if ($this->_curlyCount-- >= 1) {
+        if ($this->_curlyCount-- > 1) {
             $this->_value .= '}';
             return;
         }

@@ -4,7 +4,7 @@ namespace PSQL\ParserContexts;
 
 use \PSQL\Context;
 
-class Attribute extends Context
+class Filter extends Context
 {
     protected $_args = array();
     

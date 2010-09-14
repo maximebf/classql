@@ -26,11 +26,10 @@ class File extends Context
     {
         $object = $this->enterContext('Prototype');
         $object['name'] = $value;
-        $object['attributes'] = $this->_latestAttributes;
         $object['modifiers'] = $this->_latestModifiers;
         
         $this->_objects[$value] = $object;
-        $this->_resetLatests();
+        $this->_resetModifiers();
     }
     
     public function tokenEos()

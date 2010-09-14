@@ -6,11 +6,20 @@ use \PSQL\Context;
 
 class Model extends Context
 {
+    protected $_latestFilters = array();
+    
     protected $_columns = array();
+    
+    protected $_vars = array();
     
     protected $_methods = array();
     
     protected $_nextName;
+    
+    public function tokenFilter($value)
+    {
+        $this->_latestFilters[substr($value, 1)] = $this->enterContext('Filter');
+    }
     
     public function tokenString($value)
     {
@@ -36,35 +45,35 @@ class Model extends Context
             $this->_syntaxError('curlyOpen');
         }
         
-        $column = array(
-            'name' => $this->_nextName,
-            'type' => 'composite',
-            'value' => $this->enterContext('SqlBlock')
-        );
-        
-        $this->_columns[$this->_nextName] = $column;
+        $this->_vars[$this->_nextName] = trim($this->enterContext('Block'));
         $this->_nextName = null;
     }
     
     public function tokenParenthOpen()
     {
+        if ($this->_nextName === null) {
+            $this->_syntaxError('parenthOpen');
+        }
+        
         $params = $this->enterContext('Parameters');
         $method = $this->enterContext('Operation');
         $method['name'] = $this->_nextName;
         $method['modifiers'] = $this->_latestModifiers;
         $method['params'] = $params;
-        $method['attributes'] = $this->_latestAttributes;
+        $method['filters'] = $this->_latestFilters;
         
         $this->_methods[$this->_nextName] = $method;
         $this->_nextName = null;
-        $this->_resetLatests();
+        $this->_latestFilters = array();
+        $this->_resetModifiers();
     }
     
     public function tokenCurlyClose()
     {
         $this->exitContext(array(
             'methods' => $this->_methods,
-            'columns' => $this->_columns
+            'columns' => $this->_columns,
+            'vars' => $this->_vars
         ));
     }
 }

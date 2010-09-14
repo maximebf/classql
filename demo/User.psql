@@ -9,34 +9,28 @@ abstract User {
     firstName text;
     lastName text;
     created timestamp;
+    
     fullName { firstName || ' ' || lastName }
+    SELECT { SELECT id, email, $fullName }
     
     static find_all() {
-        SELECT * FROM users
+        $SELECT FROM users
     }
 
     static find_by_id($id) {
-        SELECT * FROM users WHERE id = $id
+        $SELECT FROM users WHERE id = $id
     }
     
-    static insert(*) {
+    @SingleValue
+    static count() {
+        SELECT COUNT(*) FROM users
+    }
+    
+    static create(*) {
         INSERT INTO users (email, password, firstName, lastName, created)
             VALUES ($email, $password, $firstName, $lastName, NOW())
     }
     
     find_messages() -> Message::find_all_by_user($id)
 }
-
-Member as members extends User {
-    role int;
-    
-    become_admin() {
-        UPDATE members SET role = 2 WHERE id = $id
-    }
-}
-
-virtual Admin extends Member {
-    
-}
-
 

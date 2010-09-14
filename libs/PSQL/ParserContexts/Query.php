@@ -2,7 +2,7 @@
 
 namespace PSQL\ParserContexts;
 
-class Query extends SqlBlock
+class Query extends Block
 {
     protected $_vars = array();
     

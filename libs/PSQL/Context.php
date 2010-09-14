@@ -2,18 +2,12 @@
 
 namespace PSQL;
 
-use \ParseInContext\Context as BaseContext;
+use ParseInContext\Context as BaseContext,
+    PSQL\ParserException;
 
 class Context extends BaseContext
 {
-    protected $_latestAttributes = array();
-    
     protected $_latestModifiers = array();
-    
-    public function tokenAttribute($value)
-    {
-        $this->_latestAttributes[substr($value, 1)] = $this->enterContext('Attribute');
-    }
     
     public function tokenStatic($value)
     {
@@ -35,9 +29,8 @@ class Context extends BaseContext
         $this->_latestModifiers[] = $value;
     }
     
-    protected function _resetLatests()
+    protected function _resetModifiers()
     {
-        $this->_latestAttributes = array();
         $this->_latestModifiers = array();
     }
     
@@ -67,6 +60,6 @@ class Context extends BaseContext
     
     protected function _syntaxError($token)
     {
-        throw new ParserException("Syntax error, unexpected token $token");
+        throw new ParserException("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
     }
 }

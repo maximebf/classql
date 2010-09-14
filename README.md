@@ -10,9 +10,7 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
 *  Easy to learn syntax
 *  Your own sql queries
 *  Custom filters to compute sql results
-*  Compile all methods as sql stored procedures (if supported by database)
-*  Relationships between models
-*  Composite columns
+*  Possibility to compile all methods as sql stored procedures (if supported by database)
 *  Complete PHP API
 *  PHP stream wrapper to include models as php classes
 *  Caching of compiled models
@@ -21,31 +19,40 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
 
 ### Defining models
 
-    User (users) {
+    User {
         
-        id int
-        email text
-        password text
-        firstName text
-        lastName text
+        // columns
+        id int;
+        email text;
+        password text;
+        firstName text;
+        lastName text;
+        
+        // vars
         fullName { firstName || ' ' || lastName }
+        SELECT { SELECT id, email, firstName, lastName, $fullName }
         
         static find_all() {
-            SELECT * FROM users
+            $SELECT FROM users
         }
 
         static find_by_id($id) {
-            SELECT * FROM users WHERE id = $id
+            $SELECT FROM users WHERE id = $id
+        }
+        
+        @SingleValue
+        static count() {
+            SELECT COUNT(*) FROM users
         }
         
         find_messages() -> Message::find_all_by_user_id($id)
     }
 
-    Message (messages) {
+    Message {
 
-        id int
-        user_id int references users(id)
-        message text
+        id int;
+        user_id int references users(id);
+        message text;
 
         static find_all_by_user_id($id) {
             SELECT * FROM messages WHERE user_id = $id
@@ -70,16 +77,20 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
     
 ## Models definition syntax
 
-    [@Attribute]
-    ModelName {
+    [abstract|virtual] ModelName [as table_name] [extends ClassName] [implements Interface, ...] {
 
-        field_declaration
-        constraint_declaration
+        column_name column_type additional_sql_declaration;
         
-        [@Attribute]
-        [static] function_name (params...) {
+        var_name { var_value }
+        
+        [@Filter]
+        [static] [private] function_name (params...) {
             sql_query
         }
 
+    }
+    
+    func_name(params...) {
+        sql_query
     }
 

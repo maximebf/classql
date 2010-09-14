@@ -32,7 +32,7 @@ class Lexer extends BaseLexer
             'pointer' => '\-\>',
             'comma' => ',',
             'callback' => '[a-zA-Z0-9_]+::[a-zA-Z0-9_]+',
-            'attribute' => '\@[a-zA-Z0-9_]+',
+            'filter' => '\@[a-zA-Z0-9_]+',
             'value' => '"((?:[^\\\]*?(?:\\\")?)*?)"',
             'string' => '[a-zA-Z0-9_\\\]+',
             'whitespace' => "[\t\s]+"
