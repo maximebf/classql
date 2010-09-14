@@ -1,7 +1,7 @@
 
 namespace Models;
 
-abstract User {
+User as users {
     
     id int;
     email text;
@@ -14,23 +14,38 @@ abstract User {
     SELECT { SELECT id, email, $fullName }
     
     static find_all() {
-        $SELECT FROM users
+        $SELECT FROM $User
     }
 
     static find_by_id($id) {
-        $SELECT FROM users WHERE id = $id
+        $SELECT FROM $User WHERE id = $id
     }
     
     @SingleValue
     static count() {
-        SELECT COUNT(*) FROM users
+        SELECT COUNT(*) FROM $User
     }
     
     static create(*) {
-        INSERT INTO users (email, password, firstName, lastName, created)
+        INSERT INTO $User (email, password, firstName, lastName, created)
             VALUES ($email, $password, $firstName, $lastName, NOW())
     }
     
     find_messages() -> Message::find_all_by_user($id)
+    add_message($message) -> Message::create($id, $message)
 }
+
+/*
+Member as members extends User {
+    role int;
+    
+    become_admin() {
+        UPDATE $Member SET role = 2
+    }
+}
+
+virtual Admin extends Member {
+
+}
+*/
 

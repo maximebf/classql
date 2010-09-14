@@ -18,7 +18,10 @@ class Model extends Context
     
     public function tokenFilter($value)
     {
-        $this->_latestFilters[substr($value, 1)] = $this->enterContext('Filter');
+        $this->_latestFilters[] = array(
+            'name' => substr($value, 1),
+            'args' => $this->enterContext('Filter')
+        );
     }
     
     public function tokenString($value)
@@ -35,7 +38,7 @@ class Model extends Context
             'sql' => trim($this->_nextName . ' ' . $value . $sql)
         );
         
-        $this->_columns[$this->_nextName] = $column;
+        $this->_columns[] = $column;
         $this->_nextName = null;
     }
     
@@ -45,7 +48,10 @@ class Model extends Context
             $this->_syntaxError('curlyOpen');
         }
         
-        $this->_vars[$this->_nextName] = trim($this->enterContext('Block'));
+        $this->_vars[] = array(
+            'name' => $this->_nextName,
+            'value' => $this->enterContext('Block')
+        );
         $this->_nextName = null;
     }
     
@@ -62,7 +68,7 @@ class Model extends Context
         $method['params'] = $params;
         $method['filters'] = $this->_latestFilters;
         
-        $this->_methods[$this->_nextName] = $method;
+        $this->_methods[] = $method;
         $this->_nextName = null;
         $this->_latestFilters = array();
         $this->_resetModifiers();

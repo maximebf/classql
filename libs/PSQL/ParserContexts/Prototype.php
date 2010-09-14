@@ -30,12 +30,22 @@ class Prototype extends Context
     {
         $key = $this->_nextStringType;
         if (array_key_exists($key, $this->_proto)) {
+            if ($this->_nextStringType != 'implements') {
+                $this->_syntaxError('string');
+            }
             if (!is_array($this->_proto[$key])) {
                 $this->_proto[$key] = array($this->_proto[$key]);
             }
             $this->_proto[$key][] = $value;
         } else {
             $this->_proto[$key] = $value;
+        }
+    }
+    
+    public function tokenComma()
+    {
+        if ($this->_nextStringType != 'implements') {
+            $this->_syntaxError('comma');
         }
     }
     

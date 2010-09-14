@@ -8,7 +8,7 @@ class Operation extends Context
 {
     public function tokenCurlyOpen()
     {
-        $query = $this->enterContext('Query');
+        $query = $this->enterContext('Block');
         $this->exitContext(array('query' => $query));
     }
     

@@ -8,6 +8,14 @@ class Block extends CatchAllContext
 {
     protected $_curlyCount = 1;
     
+    protected $_vars = array();
+    
+    public function tokenVariable($value)
+    {
+        $this->_vars[] = substr($value, 1);
+        $this->_value .= $value;
+    }
+    
     public function tokenCurlyOpen()
     {
         $this->_curlyCount++;
@@ -21,6 +29,9 @@ class Block extends CatchAllContext
             return;
         }
         
-        $this->exitContext($this->_value);
+        $this->exitContext(array(
+            'sql' => trim($this->_value),
+            'vars' => $this->_vars
+        ));
     }
 }

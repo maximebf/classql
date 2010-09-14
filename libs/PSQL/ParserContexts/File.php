@@ -28,7 +28,7 @@ class File extends Context
         $object['name'] = $value;
         $object['modifiers'] = $this->_latestModifiers;
         
-        $this->_objects[$value] = $object;
+        $this->_objects[] = $object;
         $this->_resetModifiers();
     }
     

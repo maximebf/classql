@@ -33,16 +33,16 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
         SELECT { SELECT id, email, firstName, lastName, $fullName }
         
         static find_all() {
-            $SELECT FROM users
+            $SELECT FROM $User
         }
 
         static find_by_id($id) {
-            $SELECT FROM users WHERE id = $id
+            $SELECT FROM $User WHERE id = $id
         }
         
         @SingleValue
         static count() {
-            SELECT COUNT(*) FROM users
+            SELECT COUNT(*) FROM $User
         }
         
         find_messages() -> Message::find_all_by_user_id($id)
@@ -55,7 +55,7 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
         message text;
 
         static find_all_by_user_id($id) {
-            SELECT * FROM messages WHERE user_id = $id
+            SELECT * FROM $Message WHERE user_id = $id
         }
     }
     
@@ -84,10 +84,12 @@ to create "object oriented" sql. No PHP is involved in your models: you define t
         var_name { var_value }
         
         [@Filter]
-        [static] [private] function_name (params...) {
+        [static] [private] function_name(params...) {
             sql_query
         }
-
+        
+        [@Filter]
+        [static] [private] function_name(params...) -> TargetModelName::function_name(args ...)
     }
     
     func_name(params...) {
