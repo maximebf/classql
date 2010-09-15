@@ -2,12 +2,13 @@
 
 set_include_path(implode(PATH_SEPARATOR, array(
     __DIR__ . '/../libs',
+    __DIR__ . '/../vendor/parsec/libs',
     get_include_path()
 )));
 
-require_once 'PSQL/Session.php';
-\PSQL\Session::registerAutoloader();
-\PSQL\Session::registerStreamWrapper();
+require_once 'ClassQL/Session.php';
+ClassQL\Session::registerAutoloader();
+ClassQL\Session::registerStreamWrapper();
 
 require_once 'psql://' . __DIR__ . '/User.psql';
 require_once 'psql://' . __DIR__ . '/Message.psql';

@@ -1,9 +1,9 @@
-# PSQL (A better name as yet to be found!)
+# classQL
 
 THIS IS A WORK IN PROGRESS AND IN A STATE OF EXPERIMENTATION
 
-PSQL is a new kind of ORM for PHP 5.3. Based on a custom syntax that wraps around SQL code, it allows
-to create "object oriented" sql. No PHP is involved in your models: you define them in SQL!
+classQL is a new kind of ORM for PHP 5.3. Based on a custom syntax that wraps around SQL code, it allows
+to create "object oriented" SQL. No PHP is involved in your models: you define them in SQL!
 
 ## Features
 

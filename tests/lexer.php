@@ -2,12 +2,12 @@
 
 set_include_path(implode(PATH_SEPARATOR, array(
     __DIR__ . '/../libs',
-    __DIR__ . '/../../ParseInContext/libs',
+    __DIR__ . '/../vendor/parsec/libs',
     get_include_path()
 )));
 
-require_once 'ParseInContext/Lexer.php';
-require_once 'PSQL/Lexer.php';
+require_once 'Parsec/Lexer.php';
+require_once 'ClassQL/Lexer.php';
 
-$lexer = new \PSQL\Lexer();
+$lexer = new ClassQL\Lexer();
 var_dump($lexer->tokenize(file_get_contents(__DIR__ . '/../demo/Message.psql')));

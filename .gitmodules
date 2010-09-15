@@ -1,0 +1,3 @@
+[submodule "vendor/parsec"]
+	path = vendor/parsec
+	url = git@github.com:maximebf/parsec.git
