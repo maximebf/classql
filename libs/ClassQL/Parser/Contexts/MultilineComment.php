@@ -17,21 +17,14 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\CatchAllContext;
 
-class Filter extends Context
+class MultilineComment extends CatchAllContext
 {
-    protected $_args = array();
-    
-    public function tokenParenthOpen()
+    public function tokenCommentClose()
     {
-        $this->_args = $this->enterContext('Arguments');
-    }
-    
-    public function tokenEol()
-    {
-        $this->exitContext($this->_args);
+        $this->exitContext($this->_value);
     }
 }

@@ -17,14 +17,30 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\CatchAllContext;
+use ClassQL\Parser\Context;
 
-class MultilineComment extends CatchAllContext
+class Parameters extends Context
 {
-    public function tokenCommentClose()
+    protected $_vars = array();
+    
+    public function tokenVariable($value)
     {
-        $this->exitContext();
+        if (!empty($this->_args)) {
+            $this->_syntaxError('variable');
+        }
+        
+        $this->_vars[] = $value;
+    }
+    
+    public function tokenComma()
+    {
+        $this->exitContext(array_merge($this->_vars, $this->enterContext('Parameters')));
+    }
+    
+    public function tokenParenthClose()
+    {
+        $this->exitContext($this->_vars);
     }
 }

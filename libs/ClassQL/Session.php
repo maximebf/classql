@@ -19,6 +19,10 @@
  
 namespace ClassQL;
 
+use ClassQL\Parser\Parser,
+    ClassQL\Database\Connection,
+    ClassQL\Generator\Generator;
+
 final class Session
 {
     private static $_connection;
@@ -39,7 +43,7 @@ final class Session
     
     public static function registerStreamWrapper()
     {
-        StreamWrapper::register('psql');
+        StreamWrapper::register('classql');
     }
     
     public static function configure(Connection $connection, Cache $cache = null, 
@@ -48,7 +52,7 @@ final class Session
         self::$_connection = $connection;
         self::$_cache = $cache ?: new NullCache();
         self::$_parser = $parser ?: new Parser();
-        self::$_generator = $generator ?: new Generator();
+        self::$_generator = $generator ?: new \ClassQL\Generator\PHPGenerator();
     }
     
     public static function getConnection()

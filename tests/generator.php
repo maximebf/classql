@@ -9,8 +9,8 @@ set_include_path(implode(PATH_SEPARATOR, array(
 require_once 'ClassQL/Session.php';
 ClassQL\Session::registerAutoloader();
 
-$parser = new ClassQL\Parser();
-$generator = new ClassQL\Generator();
+$parser = new ClassQL\Parser\Parser();
+$generator = new ClassQL\Generator\PHPGenerator();
 
 $descriptor = $parser->parseFile($_SERVER['argv'][1]);
 var_dump($generator->generate($descriptor));

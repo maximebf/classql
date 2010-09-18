@@ -17,30 +17,14 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\CatchAllContext;
 
-class UseDeclaration extends Context
+class Comment extends CatchAllContext
 {
-    protected $_uses = array();
-    
-    public function tokenString($value)
+    public function tokenEol()
     {
-        if (!empty($this->_uses)) {
-            $this->_syntaxError('string');
-        }
-        $this->_uses[] = $value;
-    }
-    
-    public function tokenComma()
-    {
-        $this->_uses = array_merge($this->_uses, $this->enterContext('UseDeclaration'));
-        $this->exitContext($this->_uses);
-    }
-    
-    public function tokenSemiColon()
-    {
-        $this->exitContext($this->_uses);
+        $this->exitContext();
     }
 }

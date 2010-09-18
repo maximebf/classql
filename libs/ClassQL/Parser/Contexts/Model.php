@@ -17,14 +17,12 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\ContainerContext;
 
-class Model extends Context
+class Model extends ContainerContext
 {
-    protected $_latestFilters = array();
-    
     protected $_columns = array();
     
     protected $_vars = array();
@@ -32,14 +30,6 @@ class Model extends Context
     protected $_methods = array();
     
     protected $_nextName;
-    
-    public function tokenFilter($value)
-    {
-        $this->_latestFilters[] = array(
-            'name' => substr($value, 1),
-            'args' => $this->enterContext('Filter')
-        );
-    }
     
     public function tokenString($value)
     {
@@ -66,7 +56,7 @@ class Model extends Context
         }
         
         $this->_vars[] = array(
-            'name' => $this->_nextName,
+            'name' => '$' . $this->_nextName,
             'value' => $this->enterContext('Block')
         );
         $this->_nextName = null;
@@ -81,14 +71,14 @@ class Model extends Context
         $params = $this->enterContext('Parameters');
         $method = $this->enterContext('Operation');
         $method['name'] = $this->_nextName;
-        $method['modifiers'] = $this->_latestModifiers;
         $method['params'] = $params;
+        $method['modifiers'] = $this->_latestModifiers;
         $method['filters'] = $this->_latestFilters;
+        $method['docComment'] = $this->_latestDocComment;
         
         $this->_methods[] = $method;
         $this->_nextName = null;
-        $this->_latestFilters = array();
-        $this->_resetModifiers();
+        $this->_resetLatests();
     }
     
     public function tokenCurlyClose()

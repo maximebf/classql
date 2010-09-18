@@ -17,39 +17,21 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\Context;
 
-class Parameters extends Context
+class Filter extends Context
 {
-    protected $_vars = array();
+    protected $_args = array();
     
-    public function tokenVariable($value)
+    public function tokenParenthOpen()
     {
-        if (!empty($this->_args)) {
-            $this->_syntaxError('variable');
-        }
-        
-        $this->_vars[] = substr($value, 1);
+        $this->_args = $this->enterContext('Arguments');
     }
     
-    public function tokenWildcard()
+    public function tokenEol()
     {
-        if (!empty($this->_args)) {
-            $this->_syntaxError('wildcard');
-        }
-        
-        $this->_vars[] = '*';
-    }
-    
-    public function tokenComma()
-    {
-        $this->exitContext(array_merge($this->_vars, $this->enterContext('Parameters')));
-    }
-    
-    public function tokenParenthClose()
-    {
-        $this->exitContext($this->_vars);
+        $this->exitContext($this->_args);
     }
 }

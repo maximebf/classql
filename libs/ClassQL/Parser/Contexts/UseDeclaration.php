@@ -17,44 +17,30 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\Context;
 
-class File extends Context
+class UseDeclaration extends Context
 {
-    protected $_namespace;
-    
     protected $_uses = array();
-    
-    protected $_objects = array();
-    
-    public function tokenNamespace()
-    {
-        $this->_namespace = trim($this->enterContext('Line'));
-    }
-    
-    public function tokenUse()
-    {
-        $this->_uses = array_merge($this->_uses, $this->enterContext('UseDeclaration'));
-    }
     
     public function tokenString($value)
     {
-        $object = $this->enterContext('Prototype');
-        $object['name'] = $value;
-        $object['modifiers'] = $this->_latestModifiers;
-        
-        $this->_objects[] = $object;
-        $this->_resetModifiers();
+        if (!empty($this->_uses)) {
+            $this->_syntaxError('string');
+        }
+        $this->_uses[] = $value;
     }
     
-    public function tokenEos()
+    public function tokenComma()
     {
-        $this->exitContext(array(
-            'namespace' => $this->_namespace,
-            'uses' => $this->_uses,
-            'objects' => $this->_objects
-        ));
+        $this->_uses = array_merge($this->_uses, $this->enterContext('UseDeclaration'));
+        $this->exitContext($this->_uses);
+    }
+    
+    public function tokenSemiColon()
+    {
+        $this->exitContext($this->_uses);
     }
 }

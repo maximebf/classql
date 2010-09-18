@@ -17,7 +17,7 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Parser;
 
 use Parsec\Lexer as BaseLexer;
 
@@ -31,25 +31,26 @@ class Lexer extends BaseLexer
             'curlyOpen' => '\{',
             'curlyClose' => '\}',
             'comment' => '\/\/',
+            'docCommentOpen' => '\/\*\*',
             'commentOpen' => '\/\*',
             'commentClose' => '\*\/',
             'static' => "\bstatic\b",
             'abstract' => "\babstract\b",
             'private' => "\bprivate\b",
+            'protected' => "\bprotected\b",
             'virtual' => "\bvirtual\b",
             'namespace' => "\bnamespace\b",
             'use' => "\buse\b",
             'as' => "\bas\b",
             'extends' => "\bextends\b",
             'implements' => "\bimplements\b",
-            'variable' => '\$[a-z0-9A-Z_]+',
+            'variable' => '\$[a-z0-9A-Z_]+(\[[a-zA-Z0-9_]+\])*',
             'semiColon' => ';',
             'eol' => "\n",
-            'wildcard' => '\*',
             'pointer' => '\-\>',
             'comma' => ',',
             'callback' => '[a-zA-Z0-9_]+::[a-zA-Z0-9_]+',
-            'filter' => '\@[a-zA-Z0-9_]+',
+            'filter' => '\@[a-zA-Z0-9_\\\]+',
             'value' => '"((?:[^\\\]*?(?:\\\")?)*?)"',
             'string' => '[a-zA-Z0-9_\\\]+',
             'whitespace' => "[\t\s]+"

@@ -17,14 +17,9 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Generator;
 
-use Parsec\CatchAllContext as BaseCatchAllContext;
-
-class CatchAllContext extends BaseCatchAllContext
+interface Generator
 {
-    protected function _syntaxError($token)
-    {
-        throw new ParserException("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
-    }
+    public function generate(array $descriptor);
 }

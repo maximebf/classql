@@ -17,7 +17,7 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Parser;
 
 use Parsec\StringParser,
     Parsec\ContextFactory;
@@ -28,14 +28,19 @@ class Parser extends StringParser
     {
         parent::__construct(
             new Lexer(), 
-            new ContextFactory(array('ClassQL\\ParserContexts'))
+            new ContextFactory(array('ClassQL\Parser\Contexts'))
         );
     }
     
     public function parse($string)
     {
-        $raw = parent::parse($string, 'File');
+        $raw = $this->parseRaw($string);
         return $this->_compute($raw);
+    }
+    
+    public function parseRaw($string)
+    {
+        return parent::parse($string, 'File');
     }
     
     public function parseFile($filename)
@@ -53,7 +58,7 @@ class Parser extends StringParser
         
         foreach ($raw['objects'] as $object) {
             if (isset($objects[$object['name']])) {
-                throw new ParserException("Cannot redeclare '${object['name']}'");
+                throw new Exception("Cannot redeclare '${object['name']}'");
             }
             
             if ($object['type'] == 'model') {
@@ -72,25 +77,29 @@ class Parser extends StringParser
         $tableName = isset($raw['table']) ? $raw['table'] : $modelName;
         
         $clean = array(
+            'type' => 'model',
+            'name' => $modelName,
             'table' => $tableName,
-            'extends' => isset($raw['extends']) ? $raw['extends'] : null,
+            'modifiers' => $raw['modifiers'],
+            'extends' => isset($raw['extends']) ? $raw['extends'] : '\ClassQL\Model',
             'implements' => isset($raw['implements']) ? $raw['implements'] : array(),
             'columns' => array(),
             'vars' => array($modelName => $tableName),
-            'methods' => array()
+            'methods' => array(),
+            'docComment' => $raw['docComment']
         );
         
-        $availableVars = array($modelName);
+        $availableVars = array("$$modelName", '$this');
         foreach ($raw['columns'] as $column) {
             if (in_array($column['name'], $availableVars)) {
-                throw new ParserException("Cannot redeclare '${column['name']}' in '$modelName'");
+                throw new Exception("Cannot redeclare '${column['name']}' in '$modelName'");
             }
             $clean['columns'][$column['name']] = $column;
-            $availableVars[] = $column['name'];
+            $availableVars[] = '$' . $column['name'];
         }
         foreach ($raw['vars'] as $var) {
             if (in_array($var['name'], $availableVars)) {
-                throw new ParserException("Cannot redeclare '${var['name']}' in '$modelName'");
+                throw new Exception("Cannot redeclare '${var['name']}' in '$modelName'");
             }
             
             $block = $this->_computeBlock($var['value'], $clean['vars']);
@@ -100,10 +109,15 @@ class Parser extends StringParser
         
         foreach ($raw['methods'] as $method) {
             if (isset($clean[$method['name']])) {
-                throw new ParserException("Cannot redeclare '${method['name']}' in '$modelName'");
+                throw new Exception("Cannot redeclare '${method['name']}' in '$modelName'");
             }
             
             $method = $this->_computeOperation($method, $availableVars);
+            
+            if (empty($method['modifiers']) || 
+                count(array_intersect(array('protected', 'private'), $method['modifiers'])) == 0) {
+                    $method['modifiers'][] = 'public';
+            }
             
             if (isset($method['query'])) {
                 $method['query'] = $this->_computeBlock($method['query'], $clean['vars']);
@@ -121,7 +135,7 @@ class Parser extends StringParser
         $vars = array_flip($block['vars']);
         foreach ($block['vars'] as $var) {
             if (isset($availableVars[$var])) {
-                $sql = str_replace("\$$var", $availableVars[$var], $sql);
+                $sql = str_replace($var, $availableVars[$var], $sql);
                 unset($vars[$var]);
             }
         }
@@ -133,25 +147,39 @@ class Parser extends StringParser
     
     protected function _computeOperation($operation, $possibleVars = array())
     {
-        if (in_array('*', $operation['params'])) {
-            return $operation;
+        $params = array();
+        foreach ($operation['params'] as $param) {
+            if (isset($params[$param])) {
+                throw new Exception("Parameter '$param' is defined twice in '${operation['name']}'");
+            }
+            $params[$param] = $param;
         }
+        $operation['params'] = $params;
+        
         $possibleVars = array_merge($possibleVars, $operation['params']);
         
         if (isset($operation['query'])) {
-            $neededVars = $operation['query']['vars'];
+            $vars = $operation['query']['vars'];
         } else {
-            $neededVars = array();
+            $vars = array();
             foreach ($operation['callback']['args'] as $arg) {
                 if ($arg['type'] == 'variable') {
-                    $neededVars[] = $arg['value'];
+                    $vars[] = $arg['value'];
                 }
             }
         }
         
+        $neededVars = array();
+        foreach ($vars as $var) {
+            if (strpos($var, '[') !== false) {
+                $var = substr($var, 0, strpos($var, '['));
+            }
+            $neededVars[] = $var;
+        }
+        
         $missingVars = array_values(array_diff($neededVars, $possibleVars));
         if (!empty($missingVars)) {
-            throw new ParserException("Undefined variable '${missingVars[0]}' used in '${operation['name']}'");
+            throw new Exception("Undefined variable '${missingVars[0]}' used in '${operation['name']}'");
         }
         
         return $operation;

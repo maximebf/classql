@@ -17,9 +17,9 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\CatchAllContext;
+use ClassQL\Parser\CatchAllContext;
 
 class Block extends CatchAllContext
 {
@@ -29,7 +29,7 @@ class Block extends CatchAllContext
     
     public function tokenVariable($value)
     {
-        $this->_vars[] = substr($value, 1);
+        $this->_vars[] = $value;
         $this->_value .= $value;
     }
     

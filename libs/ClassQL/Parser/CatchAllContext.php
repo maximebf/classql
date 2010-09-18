@@ -17,14 +17,14 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser;
 
-use ClassQL\CatchAllContext;
+use Parsec\CatchAllContext as BaseCatchAllContext;
 
-class Comment extends CatchAllContext
+class CatchAllContext extends BaseCatchAllContext
 {
-    public function tokenEol()
+    protected function _syntaxError($token)
     {
-        $this->exitContext();
+        throw new Exception("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
     }
 }

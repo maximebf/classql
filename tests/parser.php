@@ -9,5 +9,5 @@ set_include_path(implode(PATH_SEPARATOR, array(
 require_once 'ClassQL/Session.php';
 ClassQL\Session::registerAutoloader();
 
-$parser = new ClassQL\Parser();
-var_dump($parser->parseFile($_SERVER['argv'][1]));
+$parser = new ClassQL\Parser\Parser();
+var_dump($parser->parse(file_get_contents($_SERVER['argv'][1])));

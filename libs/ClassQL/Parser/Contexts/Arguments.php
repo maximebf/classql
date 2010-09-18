@@ -17,9 +17,9 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\Context;
 
 class Arguments extends Context
 {
@@ -57,7 +57,7 @@ class Arguments extends Context
         
         $this->_args[] = array(
             'type' => 'variable', 
-            'value' => substr($value, 1)
+            'value' => $value
         );
     }
     

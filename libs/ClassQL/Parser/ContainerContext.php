@@ -17,13 +17,15 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Parser;
 
-use Parsec\Context as BaseContext;
-
-class Context extends BaseContext
+class ContainerContext extends Context
 {
     protected $_latestModifiers = array();
+    
+    protected $_latestFilters = array();
+    
+    protected $_latestDocComment;
     
     public function tokenStatic($value)
     {
@@ -40,42 +42,33 @@ class Context extends BaseContext
         $this->_latestModifiers[] = $value;
     }
     
+    public function tokenProtected($value)
+    {
+        $this->_latestModifiers[] = $value;
+    }
+    
     public function tokenVirtual($value)
     {
         $this->_latestModifiers[] = $value;
     }
     
-    protected function _resetModifiers()
+    public function tokenFilter($value)
+    {
+        $this->_latestFilters[] = array(
+            'name' => substr($value, 1),
+            'args' => $this->enterContext('Filter')
+        );
+    }
+    
+    public function tokenDocCommentOpen()
+    {
+        $this->_latestDocComment = $this->enterContext('MultilineComment');
+    }
+    
+    protected function _resetLatests()
     {
         $this->_latestModifiers = array();
-    }
-    
-    public function tokenComment() {
-        $this->enterContext('Comment');
-    }
-    
-    public function tokenCommentOpen()
-    {
-        $this->enterContext('MultilineComment');
-    }
-    
-    public function tokenEol()
-    {
-        
-    }
-    
-    public function tokenWhitespace()
-    {
-        
-    }
-    
-    public function __call($method, $args)
-    {
-        $this->_syntaxError(lcfirst(substr($method, 5)));
-    }
-    
-    protected function _syntaxError($token)
-    {
-        throw new ParserException("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
+        $this->_latestFilters = array();
+        $this->_latestDocComment = null;
     }
 }

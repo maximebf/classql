@@ -17,19 +17,38 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Parser;
 
-class Generator
+use Parsec\Context as BaseContext;
+
+class Context extends BaseContext
 {
-    protected $_template = 'ClassQL/Template.php';
+    public function tokenComment() {
+        $this->enterContext('Comment');
+    }
     
-    protected $_namespace;
-    
-    public function generate($descriptor)
+    public function tokenCommentOpen()
     {
-        extract($descriptor);
-        ob_start();
-        include $this->_template;
-        return ob_get_clean();
+        $this->enterContext('MultilineComment');
+    }
+    
+    public function tokenEol()
+    {
+        
+    }
+    
+    public function tokenWhitespace()
+    {
+        
+    }
+    
+    public function __call($method, $args)
+    {
+        $this->_syntaxError(lcfirst(substr($method, 5)));
+    }
+    
+    protected function _syntaxError($token)
+    {
+        throw new ParserException("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
     }
 }

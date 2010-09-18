@@ -17,8 +17,8 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Parser;
 
-class ParserException extends Exception
+class Exception extends \Exception
 {
 }

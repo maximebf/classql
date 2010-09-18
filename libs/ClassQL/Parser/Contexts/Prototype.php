@@ -17,10 +17,10 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context,
-    ClassQL\ParserException;
+use ClassQL\Parser\Context,
+    ClassQL\Parser\Exception;
 
 class Prototype extends Context
 {
@@ -69,7 +69,7 @@ class Prototype extends Context
     public function tokenParenthOpen()
     {
         if (!empty($this->_proto)) {
-            throw new ParserException('Wrong prototype declaration for function');
+            throw new Exception('Wrong prototype declaration for function');
         }
         
         $params = $this->enterContext('Parameters');

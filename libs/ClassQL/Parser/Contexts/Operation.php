@@ -17,26 +17,21 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Context;
+use ClassQL\Parser\Context;
 
-class Callback extends Context
+class Operation extends Context
 {
-    protected $_callback;
-    
-    public function tokenCallback($value)
+    public function tokenCurlyOpen()
     {
-        $this->_callback = $value;
+        $query = $this->enterContext('Block');
+        $this->exitContext(array('query' => $query));
     }
     
-    public function tokenParenthOpen()
+    public function tokenPointer()
     {
-        $args = $this->enterContext('Arguments');
-        
-        $this->exitContext(array(
-            'name' => $this->_callback,
-            'args' => $args
-        ));
+        $callback = $this->enterContext('Callback');
+        $this->exitContext(array('callback' => $callback));
     }
 }

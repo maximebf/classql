@@ -1,7 +1,7 @@
 
 namespace Models;
 
-User as users {
+abstract User {
     
     id int;
     email text;
@@ -10,36 +10,35 @@ User as users {
     lastName text;
     created timestamp;
     
-    fullName { firstName || ' ' || lastName }
-    SELECT { SELECT id, email, $fullName }
+    fullName { $this.firstName || ' ' || $this.lastName }
+    SELECT { SELECT $this.id, $this.email, $fullName }
     
-    static find_all() {
-        $SELECT FROM $User
+    static findAll() {
+        $SELECT FROM $this
     }
 
-    static find_by_id($id) {
-        $SELECT FROM $User WHERE id = $id
+    static findById($id) {
+        $SELECT FROM $this WHERE $this.id = $id
     }
     
     @SingleValue
     static count() {
-        SELECT COUNT(*) FROM $User
+        SELECT COUNT(*) FROM $this
     }
     
-    static create(*) {
-        INSERT INTO $User (email, password, firstName, lastName, created)
-            VALUES ($email, $password, $firstName, $lastName, NOW())
+    static create($data) {
+        INSERT INTO $this (email, password, firstName, lastName, created)
+            VALUES ($data[email], $data[password], $data[firstName], $data[lastName], NOW())
     }
     
-    find_messages() -> Message::find_all_by_user($id)
-    add_message($message) -> Message::create($id, $message)
+    findMessages() -> Message::findAllByUser($id)
+    addMessage($message) -> Message::create($id, $message)
 }
 
-/*
 Member as members extends User {
     role int;
     
-    become_admin() {
+    becomeAdmin() {
         UPDATE $Member SET role = 2
     }
 }
@@ -47,5 +46,4 @@ Member as members extends User {
 virtual Admin extends Member {
 
 }
-*/
 

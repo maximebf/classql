@@ -17,9 +17,9 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\ParserContexts;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\CatchAllContext;
+use ClassQL\Parser\CatchAllContext;
 
 class Line extends CatchAllContext
 {

@@ -1,13 +1,16 @@
 
 namespace Models;
 
+/**
+ * Represents a message sent by the user
+ */
 Message {
 
     id int;
     user_id int references users(id);
     message text;
 
-    static find_all_by_user_id($id) {
+    static findAllByUser($id) {
         SELECT * FROM $Message WHERE user_id = $id
     }
     
@@ -18,6 +21,10 @@ Message {
 
 }
 
+/**
+ * hello world
+ */
+@ClassQL\Filters\SingleValue
 say_hello_to($name) {
     SELECT 'hello' || $name
 }
