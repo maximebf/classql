@@ -17,11 +17,12 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Database;
+namespace ClassQL;
 
-use PDO;
-
-class Connection extends PDO
+class Collection
 {
-    
+    public function __construct(PDOStatement $statement, $objectClass = '\ClassQL\Model')
+    {
+        
+    }
 }

@@ -24,6 +24,8 @@ use Parsec\StringParser,
 
 class Parser extends StringParser
 {
+    protected $_baseModelClass = '\ClassQL\Model';
+    
     public function __construct()
     {
         parent::__construct(
@@ -34,8 +36,8 @@ class Parser extends StringParser
     
     public function parse($string)
     {
-        $raw = $this->parseRaw($string);
-        return $this->_compute($raw);
+        $descriptor = $this->parseRaw($string);
+        return $this->_compute($descriptor);
     }
     
     public function parseRaw($string)
@@ -48,140 +50,41 @@ class Parser extends StringParser
         return $this->parse(file_get_contents($filename));
     }
     
-    protected function _compute($raw)
+    protected function _compute($descriptor)
     {
-        $clean = array(
-            'namespace' => $raw['namespace'],
-            'uses' => $raw['uses'],
-            'objects' => array()
-        );
-        
-        foreach ($raw['objects'] as $object) {
-            if (isset($objects[$object['name']])) {
-                throw new Exception("Cannot redeclare '${object['name']}'");
-            }
-            
+        foreach ($descriptor['objects'] as &$object) {
             if ($object['type'] == 'model') {
-                $clean['objects'][$object['name']] = $this->_computeModel($object);
+                $object = $this->_computeModel($object);
             } else {
-                $clean['objects'][$object['name']] = $this->_computeOperation($object);
+                $object = $this->_computeFunction($object);
             }
         }
         
-        return $clean;
+        return $descriptor;
     }
     
-    protected function _computeModel($raw)
+    protected function _computeModel($model)
     {
-        $modelName = $raw['name'];
-        $tableName = isset($raw['table']) ? $raw['table'] : $modelName;
+        $model = array_merge(array(
+            'table' => $model['name'],
+            'extends' => $this->_baseModelClass,
+            'implements' => array()
+        ), $model);
         
-        $clean = array(
-            'type' => 'model',
-            'name' => $modelName,
-            'table' => $tableName,
-            'modifiers' => $raw['modifiers'],
-            'extends' => isset($raw['extends']) ? $raw['extends'] : '\ClassQL\Model',
-            'implements' => isset($raw['implements']) ? $raw['implements'] : array(),
-            'columns' => array(),
-            'vars' => array($modelName => $tableName),
-            'methods' => array(),
-            'docComment' => $raw['docComment']
-        );
-        
-        $availableVars = array("$$modelName", '$this');
-        foreach ($raw['columns'] as $column) {
-            if (in_array($column['name'], $availableVars)) {
-                throw new Exception("Cannot redeclare '${column['name']}' in '$modelName'");
+        foreach ($model['methods'] as &$method) {
+            if (isset($method['query']) && !isset($method['query']['returns'])) {
+                $method['query']['returns'] = $model['name'];
             }
-            $clean['columns'][$column['name']] = $column;
-            $availableVars[] = '$' . $column['name'];
-        }
-        foreach ($raw['vars'] as $var) {
-            if (in_array($var['name'], $availableVars)) {
-                throw new Exception("Cannot redeclare '${var['name']}' in '$modelName'");
-            }
-            
-            $block = $this->_computeBlock($var['value'], $clean['vars']);
-            $clean['vars'][$var['name']] = $block['sql'];
-            $availableVars[] = $var['name'];
-        }
-        
-        foreach ($raw['methods'] as $method) {
-            if (isset($clean[$method['name']])) {
-                throw new Exception("Cannot redeclare '${method['name']}' in '$modelName'");
-            }
-            
-            $method = $this->_computeOperation($method, $availableVars);
-            
-            if (empty($method['modifiers']) || 
-                count(array_intersect(array('protected', 'private'), $method['modifiers'])) == 0) {
-                    $method['modifiers'][] = 'public';
-            }
-            
-            if (isset($method['query'])) {
-                $method['query'] = $this->_computeBlock($method['query'], $clean['vars']);
-            }
-            
-            $clean['methods'][$method['name']] = $method;
         }
     
-        return $clean;
+        return $model;
     }
     
-    protected function _computeBlock($block, $availableVars = array())
+    protected function _computeFunction($function)
     {
-        $sql = $block['sql'];
-        $vars = array_flip($block['vars']);
-        foreach ($block['vars'] as $var) {
-            if (isset($availableVars[$var])) {
-                $sql = str_replace($var, $availableVars[$var], $sql);
-                unset($vars[$var]);
-            }
+        if (isset($function['query']) && !isset($function['query']['returns'])) {
+            $function['query']['returns'] = $this->_baseModelClass;
         }
-        return array(
-            'sql' => $sql,
-            'vars' => array_keys($vars)
-        );
-    }
-    
-    protected function _computeOperation($operation, $possibleVars = array())
-    {
-        $params = array();
-        foreach ($operation['params'] as $param) {
-            if (isset($params[$param])) {
-                throw new Exception("Parameter '$param' is defined twice in '${operation['name']}'");
-            }
-            $params[$param] = $param;
-        }
-        $operation['params'] = $params;
-        
-        $possibleVars = array_merge($possibleVars, $operation['params']);
-        
-        if (isset($operation['query'])) {
-            $vars = $operation['query']['vars'];
-        } else {
-            $vars = array();
-            foreach ($operation['callback']['args'] as $arg) {
-                if ($arg['type'] == 'variable') {
-                    $vars[] = $arg['value'];
-                }
-            }
-        }
-        
-        $neededVars = array();
-        foreach ($vars as $var) {
-            if (strpos($var, '[') !== false) {
-                $var = substr($var, 0, strpos($var, '['));
-            }
-            $neededVars[] = $var;
-        }
-        
-        $missingVars = array_values(array_diff($neededVars, $possibleVars));
-        if (!empty($missingVars)) {
-            throw new Exception("Undefined variable '${missingVars[0]}' used in '${operation['name']}'");
-        }
-        
-        return $operation;
+        return $function;
     }
 }

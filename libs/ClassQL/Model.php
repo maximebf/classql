@@ -19,19 +19,17 @@
  
 namespace ClassQL;
 
-abstract class Model
+class Model
 {
-    protected $_connection;
-    
-    protected $_fields = array();
-    
-    public function __construct(array $data = array(), Connection $connection = null)
+    public function __construct(array $data = array())
     {
-        $this->_connection = $connection ?: Session::getConnection();
+        $this->_updateProperties($data);
     }
     
-    public function query($sql, $params = array())
+    public function _updateProperties($data)
     {
-        
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
+        }
     }
 }

@@ -23,6 +23,7 @@ use ClassQL\Parser\Context;
 
 class UseDeclaration extends Context
 {
+    /** @var array */
     protected $_uses = array();
     
     public function tokenString($value)
@@ -35,8 +36,7 @@ class UseDeclaration extends Context
     
     public function tokenComma()
     {
-        $this->_uses = array_merge($this->_uses, $this->enterContext('UseDeclaration'));
-        $this->exitContext($this->_uses);
+        $this->exitContext(array_merge($this->_uses, $this->enterContext('UseDeclaration')));
     }
     
     public function tokenSemiColon()

@@ -23,15 +23,47 @@ use ClassQL\Parser\Context;
 
 class Operation extends Context
 {
+    /** @var mixed */
+    protected $_returns = false;
+    
+    public function tokenReturns()
+    {
+        // the returns token has been used
+        $this->_returns = true;
+    }
+    
+    public function tokenString($value)
+    {
+        if ($this->_returns === false) {
+            // no returns token before string token
+            $this->_syntaxError('string');
+        }
+        $this->_returns = $value;
+    }
+    
     public function tokenCurlyOpen()
     {
+        if ($this->_returns === true) {
+            // returns token but no string token
+            $this->_syntaxError('curlyOpen');
+        }
+        
         $query = $this->enterContext('Block');
+        if ($this->_returns !== false) {
+            $query['returns'] = $this->_returns;
+        }
         $this->exitContext(array('query' => $query));
     }
     
     public function tokenPointer()
     {
-        $callback = $this->enterContext('Callback');
-        $this->exitContext(array('callback' => $callback));
+        if ($this->_returns === true) {
+            // returns token but no string token
+            $this->_syntaxError('curlyOpen');
+        }
+        
+        $this->exitContext(array(
+            'callback' => $this->enterContext('Callback')
+        ));
     }
 }

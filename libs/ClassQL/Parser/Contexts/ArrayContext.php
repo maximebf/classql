@@ -19,30 +19,42 @@
  
 namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Parser\Context;
+use ClassQL\Parser\Context,
+    ClassQL\Parser\Exception;
 
-class Parameters extends Context
+class ArrayContext extends Arguments
 {
-    /** @var array */
-    protected $_vars = array();
+    /** @var string */
+    protected $_nextKey = null;
     
-    public function tokenVariable($value)
+    public function tokenArrayAssoc()
     {
-        if (!empty($this->_vars)) {
-            // only one variable possible
-            $this->_syntaxError('variable');
+        $key = $this->_arg;
+        if ($key['type'] != 'identifier') {
+            throw new Exception("Wrong type for array key '${key['value']}'");
         }
-        
-        $this->_vars[$value] = $value;
+        $this->_arg = null;
+        $this->_nextKey = $key['value'];
     }
     
     public function tokenComma()
     {
-        $this->exitContext(array_merge($this->_vars, $this->enterContext('Parameters')));
+        if ($this->_nextKey !== null) {
+            $this->_arg['key'] = $this->_nextKey;
+        }
+        $this->exitContext(array_merge(array($this->_arg), $this->enterContext('ArrayContext')));
+    }
+    
+    public function tokenArrayClose()
+    {
+        if ($this->_nextKey !== null) {
+            $this->_arg['key'] = $this->_nextKey;
+        }
+        $this->exitContext(array($this->_arg));
     }
     
     public function tokenParenthClose()
     {
-        $this->exitContext($this->_vars);
+        $this->_syntaxError('parenthClose');
     }
 }

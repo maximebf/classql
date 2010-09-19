@@ -24,8 +24,10 @@ use ClassQL\Parser\Context,
 
 class Prototype extends Context
 {
+    /** @var array */
     protected $_proto = array();
     
+    /** @var string */
     protected $_nextStringType;
     
     public function tokenAs()
@@ -48,6 +50,7 @@ class Prototype extends Context
         $key = $this->_nextStringType;
         if (array_key_exists($key, $this->_proto)) {
             if ($this->_nextStringType != 'implements') {
+                // only implements can have multiple values
                 $this->_syntaxError('string');
             }
             if (!is_array($this->_proto[$key])) {
@@ -71,16 +74,23 @@ class Prototype extends Context
         if (!empty($this->_proto)) {
             throw new Exception('Wrong prototype declaration for function');
         }
+        // parenthOpen means it's a function
         
         $params = $this->enterContext('Parameters');
-        $func = array_merge($this->_proto, $this->enterContext('Operation'));
-        $func['type'] = 'function';
-        $func['params'] = $params;
+        $func = array_merge(
+            $this->_proto, 
+            $this->enterContext('Operation'),
+            array(
+                'type' => 'function',
+                'params' => $params
+            )
+        );
         $this->exitContext($func);
     }
     
     public function tokenCurlyOpen()
     {
+        // curlyOpen means it's a class
         $model = array_merge($this->_proto, $this->enterContext('Model'));
         $model['type'] = 'model';
         $this->exitContext($model);

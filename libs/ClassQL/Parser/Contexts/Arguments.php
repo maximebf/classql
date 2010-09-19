@@ -23,15 +23,17 @@ use ClassQL\Parser\Context;
 
 class Arguments extends Context
 {
-    protected $_args = array();
+    /** @var array */
+    protected $_arg;
     
     public function tokenValue($value)
     {
-        if (!empty($this->_args)) {
+        if (!empty($this->_arg)) {
+            // only one token possible
             $this->_syntaxError('value');
         }
         
-        $this->_args[] = array(
+        $this->_arg = array(
             'type' => 'scalar', 
             'value' => str_replace('\\"', '"', trim($value, '"'))
         );
@@ -39,11 +41,12 @@ class Arguments extends Context
     
     public function tokenString($value)
     {
-        if (!empty($this->_args)) {
+        if (!empty($this->_arg)) {
+            // only one token possible
             $this->_syntaxError('string');
         }
         
-        $this->_args[] = array(
+        $this->_arg = array(
             'type' => 'identifier', 
             'value' => $value
         );
@@ -51,23 +54,40 @@ class Arguments extends Context
     
     public function tokenVariable($value)
     {
-        if (!empty($this->_args)) {
+        if (!empty($this->_arg)) {
+            // only one token possible
             $this->_syntaxError('variable');
         }
         
-        $this->_args[] = array(
+        $this->_arg = array(
             'type' => 'variable', 
             'value' => $value
         );
     }
     
+    public function tokenArrayOpen()
+    {
+        if (!empty($this->_arg)) {
+            // only one token possible
+            $this->_syntaxError('arrayOpen');
+        }
+        
+        $this->_arg = array(
+            'type' => 'array',
+            'value' => $this->enterContext('ArrayContext')
+        );
+    }
+    
     public function tokenComma()
     {
-        $this->exitContext(array_merge($this->_args, $this->enterContext('Arguments')));
+        $this->exitContext(array_merge(
+            array($this->_arg), 
+            $this->enterContext('Arguments')
+        ));
     }
     
     public function tokenParenthClose()
     {
-        $this->exitContext($this->_args);
+        $this->exitContext(array($this->_arg));
     }
 }

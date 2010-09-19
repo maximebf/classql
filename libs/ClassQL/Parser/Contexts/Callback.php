@@ -23,6 +23,7 @@ use ClassQL\Parser\Context;
 
 class Callback extends Context
 {
+    /** @var string */
     protected $_callback;
     
     public function tokenCallback($value)
@@ -32,11 +33,9 @@ class Callback extends Context
     
     public function tokenParenthOpen()
     {
-        $args = $this->enterContext('Arguments');
-        
         $this->exitContext(array(
             'name' => $this->_callback,
-            'args' => $args
+            'args' => $this->enterContext('Arguments')
         ));
     }
 }

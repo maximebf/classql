@@ -23,10 +23,13 @@ use ClassQL\Parser\ContainerContext;
 
 class File extends ContainerContext
 {
+    /** @var string */
     protected $_namespace;
     
+    /** @var array */
     protected $_uses = array();
     
+    /** @var array */
     protected $_objects = array();
     
     public function tokenNamespace()
@@ -41,13 +44,22 @@ class File extends ContainerContext
     
     public function tokenString($value)
     {
-        $object = $this->enterContext('Prototype');
-        $object['name'] = $value;
-        $object['modifiers'] = $this->_latestModifiers;
-        $object['filters'] = $this->_latestFilters;
-        $object['docComment'] = $this->_latestDocComment;
+        // a string means an identifier for a class or a function
         
-        $this->_objects[] = $object;
+        if (isset($this->_objects[$value])) {
+            throw new Exception("Cannot redeclare '$value()'");
+        }
+        
+        $this->_objects[$value] = array_merge(
+            $this->enterContext('Prototype'),
+            array(
+                'name' => $value,
+                'modifiers' => $this->_latestModifiers,
+                'filters' => $this->_latestFilters,
+                'docComment' => $this->_latestDocComment
+            )
+        );
+        
         $this->_resetLatests();
     }
     

@@ -23,30 +23,41 @@ use ClassQL\Parser\ContainerContext;
 
 class Model extends ContainerContext
 {
+    /** @var array */
     protected $_columns = array();
     
+    /** @var array */
     protected $_vars = array();
     
+    /** @var array */
     protected $_methods = array();
     
+    /** @var string */
     protected $_nextName;
     
     public function tokenString($value)
     {
         if ($this->_nextName === null) {
+            // first match on a token, means its an identifier for something
+            // that has yet to be defined
             $this->_nextName = $value;
             return;
         }
+        // second match on a string token means a column
         
-        $sql = $this->enterContext('Line');
-        $column = array(
+        if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
+            throw new Exception("Cannot redeclare '$this->_nextName'");
+        }
+        
+        $this->_columns[$this->_nextName] = array(
             'name' => $this->_nextName,
             'type' => $value,
-            'sql' => trim($this->_nextName . ' ' . $value . $sql)
+            'sql' => trim($this->_nextName . ' ' . $value . $this->enterContext('Line')),
+            'docComment' => $this->_latestDocComment
         );
         
-        $this->_columns[] = $column;
         $this->_nextName = null;
+        $this->_resetLatests();
     }
     
     public function tokenCurlyOpen()
@@ -54,11 +65,38 @@ class Model extends ContainerContext
         if ($this->_nextName === null) {
             $this->_syntaxError('curlyOpen');
         }
+        // curlyOpen after a string means a variable (sql string)
         
-        $this->_vars[] = array(
+        if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
+            throw new Exception("Cannot redeclare '$this->_nextName'");
+        }
+        
+        $this->_vars['$' . $this->_nextName] = array(
+            'type' => 'sql',
             'name' => '$' . $this->_nextName,
             'value' => $this->enterContext('Block')
         );
+        
+        $this->_nextName = null;
+    }
+    
+    public function tokenArrayOpen()
+    {
+        if ($this->_nextName === null) {
+            $this->_syntaxError('curlyOpen');
+        }
+        // arrayOpen after a string means a variable (array)
+        
+        if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
+            throw new Exception("Cannot redeclare '$this->_nextName'");
+        }
+        
+        $this->_vars['$' . $this->_nextName] = array(
+            'type' => 'array',
+            'name' => '$' . $this->_nextName,
+            'value' => $this->enterContext('ArrayContext')
+        );
+        
         $this->_nextName = null;
     }
     
@@ -67,16 +105,26 @@ class Model extends ContainerContext
         if ($this->_nextName === null) {
             $this->_syntaxError('parenthOpen');
         }
+        // parenthOpen after a string means a function
         
+        if (isset($this->_methods[$this->_nextName])) {
+            throw new Exception("Cannot redeclare '$this->_nextName()'");
+        }
+        
+        // parse parameters (until the next parentClose)
         $params = $this->enterContext('Parameters');
-        $method = $this->enterContext('Operation');
-        $method['name'] = $this->_nextName;
-        $method['params'] = $params;
-        $method['modifiers'] = $this->_latestModifiers;
-        $method['filters'] = $this->_latestFilters;
-        $method['docComment'] = $this->_latestDocComment;
         
-        $this->_methods[] = $method;
+        $this->_methods[$this->_nextName] = array_merge(
+            $this->enterContext('Operation'), // parses the function body
+            array(
+                'name' => $this->_nextName,
+                'params' => $params,
+                'modifiers' => $this->_latestModifiers,
+                'filters' => $this->_latestFilters,
+                'docComment' => $this->_latestDocComment
+            )
+        );
+        
         $this->_nextName = null;
         $this->_resetLatests();
     }
@@ -84,9 +132,9 @@ class Model extends ContainerContext
     public function tokenCurlyClose()
     {
         $this->exitContext(array(
-            'methods' => $this->_methods,
             'columns' => $this->_columns,
-            'vars' => $this->_vars
+            'vars' => $this->_vars,
+            'methods' => $this->_methods
         ));
     }
 }

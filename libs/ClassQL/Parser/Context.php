@@ -49,6 +49,6 @@ class Context extends BaseContext
     
     protected function _syntaxError($token)
     {
-        throw new ParserException("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
+        throw new Exception("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
     }
 }

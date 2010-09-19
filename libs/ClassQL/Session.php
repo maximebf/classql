@@ -25,12 +25,16 @@ use ClassQL\Parser\Parser,
 
 final class Session
 {
-    private static $_connection;
+    /** @var PDO */
+    private static $_pdo;
     
+    /** @var Cache */
     private static $_cache;
     
+    /** @var Parser */
     private static $_parser;
     
+    /** @var Generator */
     private static $_generator;
     
     public static function registerAutoloader()
@@ -46,18 +50,18 @@ final class Session
         StreamWrapper::register('classql');
     }
     
-    public static function configure(Connection $connection, Cache $cache = null, 
+    public static function configure(PDO $pdo, Cache $cache = null, 
         Parser $parser = null, Generator $generator = null)
     {
-        self::$_connection = $connection;
+        self::$_pdo = $pdo;
         self::$_cache = $cache ?: new NullCache();
         self::$_parser = $parser ?: new Parser();
         self::$_generator = $generator ?: new \ClassQL\Generator\PHPGenerator();
     }
     
-    public static function getConnection()
+    public static function getPDO()
     {
-        return self::$_connection;
+        return self::$_pdo;
     }
     
     public static function getCache()

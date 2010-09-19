@@ -22,9 +22,9 @@ namespace ClassQL\Generator;
 class PHPGenerator implements Generator
 {
     protected $_templates = array(
-        'file'      => 'ClassQL/Generator/Templates/File.php',
-        'function'  => 'ClassQL/Generator/Templates/Function.php',
-        'class'     => 'ClassQL/Generator/Templates/Class.php',
+        'file'      => 'ClassQL/Generator/PHPTemplates/File.php',
+        'function'  => 'ClassQL/Generator/PHPTemplates/Function.php',
+        'class'     => 'ClassQL/Generator/PHPTemplates/Class.php',
     );
     
     protected $_namespace;
@@ -82,18 +82,126 @@ class PHPGenerator implements Generator
         return ob_get_clean();
     }
     
-    protected function _formatParams($params)
+    protected function _renderModifiers($modifiers, $isMethod = false)
     {
-        
+        $modifiers = array_diff($modifiers, array('virtual'));
+        if ($isMethod && !in_array('private', $modifiers) && !in_array('protected', $modifiers)) {
+            $modifiers[] = 'public';
+        }
+        return count($modifiers) ? implode(' ', $modifiers) . ' ' : '';
     }
     
-    protected function _formatArguments($args)
+    protected function _renderArgs($args, $varsInScope = array(), $divider = ', ')
     {
-        
+        $renderedArgs = array();
+        foreach ($args as $arg) {
+            $renderedArgs[] = $this->_getRenderedArgsItem($arg, $varsInScope);
+        }
+        return implode($divider, $renderedArgs);
     }
     
-    protected function _parameterizeQuery($query)
+    protected function _renderArray($array, $divider = ', ')
     {
-        return preg_replace('/\$[a-z0-9A-Z_]+/', '?', $query);
+        $elements = array();
+        foreach ($array as $element) {
+            $item = $this->_getRenderedArgsItem($element);
+            if (isset($element['key'])) {
+                $elements[] = "'${element['key']}' => $item";
+            } else {
+                $elements[] = $item;
+            }
+        }
+        return 'array(' . implode($divider, $elements) . ')';
+    }
+    
+    protected function _getRenderedArgsItem($item, $varsInScope = false)
+    {
+        if ($item['type'] === 'variable') {
+            return $this->_renderVar($item['value'], $varsInScope);
+        }
+        if ($item['type'] == 'array') {
+            return $this->_renderArray($item['value']);
+        }
+        if ($item['type'] == 'identifier') {
+            return "'${item['value']}'";
+        }
+        return $item['value'];
+    }
+    
+    protected function _renderVar($var, $varsInScope = false)
+    {
+        if ($var === '$this') {
+            $var = '$this->tableName';
+        } else if ($varsInScope === true || ($varsInScope !== false && !in_array($var, $varsInScope))) {
+            $var = '$this->' . substr($var, 1);
+        }
+        return str_replace(array('[', ']'), array("['", "']"), $var);
+    }
+    
+    protected function _renderQuery($query, $varsToParameterized = array())
+    {
+        $sql = $query['sql'];
+        foreach ($varsToParameterized as $var) {
+            $sql = str_replace($var, '?', $sql);
+        }
+        return str_replace("'", "\'", $sql);
+    }
+    
+    protected function _renderQueryInClass($query, $params = array())
+    {
+        $vars = array();
+        foreach ($query['vars'] as $var) {
+            if (!in_array($this->_getCanonicalVarName($var), $params)) {
+                $vars[] = $this->_renderVar($var, true);
+            }
+        }
+        
+        $sql = $this->_renderQuery($query, $this->_getScopeVars($query['vars'], $params));
+        foreach ($this->_getClassVars($query['vars'], $params) as $var) {
+            $sql = str_replace($var, '%s', $sql);
+        }
+        
+        if (empty($vars)) {
+            return "'$sql'";
+        } else {
+            return "sprintf(\n        '$sql',\n        " 
+                 . implode(",\n        ", $vars) . "\n    )";
+        }
+    }
+    
+    protected function _renderQueryParams($vars, $params)
+    {
+        return implode(', ', array_map(array($this, '_renderVar'), 
+            $this->_getScopeVars($vars, $params)));
+    }
+    
+    protected function _getCanonicalVarName($var)
+    {
+        if (strpos($var, '[')) {
+            return substr($var, 0, strpos($var, '['));
+        }
+        return $var;
+    }
+    
+    protected function _getClassVars($vars, $params)
+    {
+        $classVars = array();
+        foreach ($vars as $var) {
+            if (!in_array($this->_getCanonicalVarName($var), $params)) {
+                $classVars[] = $var;
+            }
+        }
+        return $classVars;
+    }
+    
+    protected function _getScopeVars($vars, $params)
+    {
+        $scopeVars = array();
+        foreach ($vars as $var) {
+            if (in_array($this->_getCanonicalVarName($var), $params)) {
+                $scopeVars[] = $var;
+            }
+        }
+        return $scopeVars;
     }
 }

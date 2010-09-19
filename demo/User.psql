@@ -11,7 +11,8 @@ abstract User {
     created timestamp;
     
     fullName { $this.firstName || ' ' || $this.lastName }
-    SELECT { SELECT $this.id, $this.email, $fullName }
+    selectColumns { $this.id, $this.email, $fullName }
+    SELECT { SELECT $selectColumns }
     
     static findAll() {
         $SELECT FROM $this
@@ -19,6 +20,11 @@ abstract User {
 
     static findById($id) {
         $SELECT FROM $this WHERE $this.id = $id
+    }
+
+    @Composite(Message)
+    static findByIdWithMessages($id) {
+        $SELECT, message FROM $this JOIN messages m ON m.user_id = $this.id WHERE $this.id = $id
     }
     
     @SingleValue
@@ -37,9 +43,10 @@ abstract User {
 
 Member as members extends User {
     role int;
+    roles [ member => 1, admin => 2 ]
     
-    becomeAdmin() {
-        UPDATE $Member SET role = 2
+    becomeAdmin() returns Admin {
+        UPDATE $this SET role = $roles[member] RETURNING $selectColumns
     }
 }
 

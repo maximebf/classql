@@ -23,18 +23,22 @@ use ClassQL\Parser\CatchAllContext;
 
 class Block extends CatchAllContext
 {
+    /** @var int */
     protected $_curlyCount = 1;
     
+    /** @var array */
     protected $_vars = array();
     
     public function tokenVariable($value)
     {
+        // catches variables from the sql string
         $this->_vars[] = $value;
         $this->_value .= $value;
     }
     
     public function tokenCurlyOpen()
     {
+        // counts curly braces to avoid exciting to early
         $this->_curlyCount++;
         $this->_value .= '{';
     }

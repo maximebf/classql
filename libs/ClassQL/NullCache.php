@@ -33,6 +33,5 @@ class NullCache extends Cache
     
     public function set($filename, $content) 
     {
-        return false;
     }
 }
