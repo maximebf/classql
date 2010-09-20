@@ -21,20 +21,12 @@ namespace ClassQL\Parser\Contexts;
 
 use ClassQL\Parser\Context;
 
-class Operation extends Context
+class Returns extends ReturnsGroup
 {
-    public function tokenReturns()
-    {
-        $this->exitContext(array('query' => $this->enterContext('Returns')));
-    }
-    
     public function tokenCurlyOpen()
     {
-        $this->exitContext(array('query' => $this->enterContext('Block')));
-    }
-    
-    public function tokenPointer()
-    {
-        $this->exitContext(array('callback' => $this->enterContext('Callback')));
+        $query = $this->enterContext('Block');
+        $query['returns'] = $this->_return;
+        $this->exitContext($query);
     }
 }

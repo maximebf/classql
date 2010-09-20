@@ -72,8 +72,18 @@ class Parser extends StringParser
         ), $model);
         
         foreach ($model['methods'] as &$method) {
-            if (isset($method['query']) && !isset($method['query']['returns'])) {
-                $method['query']['returns'] = $model['name'];
+            if (isset($method['query'])) {
+                if (!isset($method['query']['returns'])) {
+                    $method['query']['returns'] = array(
+                        'type' => 'collection',
+                        'value' => $model['name']
+                    );
+                } else if ($method['query']['returns']['type'] == 'object') {
+                    $method['query']['returns'] = array(
+                        'type' => 'collection',
+                        'value' => $this->_baseModelClass
+                    );
+                }
             }
         }
     
@@ -82,8 +92,12 @@ class Parser extends StringParser
     
     protected function _computeFunction($function)
     {
-        if (isset($function['query']) && !isset($function['query']['returns'])) {
-            $function['query']['returns'] = $this->_baseModelClass;
+        if (isset($function['query']) && 
+            (!isset($function['query']['returns']) || $function['query']['returns']['type'] == 'object')) {
+                $function['query']['returns'] = array(
+                    'type' => 'collection',
+                    'value' => $this->_baseModelClass
+                );
         }
         return $function;
     }

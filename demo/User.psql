@@ -14,25 +14,23 @@ abstract User {
     selectColumns { $this.id, $this.email, $fullName }
     SELECT { SELECT $selectColumns }
     
-    static findAll() {
+    static findAll() : User[] {
         $SELECT FROM $this
     }
 
-    static findById($id) {
+    static findById($id) : User {
         $SELECT FROM $this WHERE $this.id = $id
     }
 
-    @Composite(Message)
-    static findByIdWithMessages($id) {
+    static findByIdWithMessages($id) : User + Message[] {
         $SELECT, message FROM $this JOIN messages m ON m.user_id = $this.id WHERE $this.id = $id
     }
     
-    @SingleValue
-    static count() {
+    static count() : value {
         SELECT COUNT(*) FROM $this
     }
     
-    static create($data) {
+    static create($data) : null {
         INSERT INTO $this (email, password, firstName, lastName, created)
             VALUES ($data[email], $data[password], $data[firstName], $data[lastName], NOW())
     }
@@ -45,7 +43,7 @@ Member as members extends User {
     role int;
     roles [ member => 1, admin => 2 ]
     
-    becomeAdmin() returns Admin {
+    becomeAdmin() : Admin {
         UPDATE $this SET role = $roles[member] RETURNING $selectColumns
     }
 }

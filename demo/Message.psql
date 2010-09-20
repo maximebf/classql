@@ -10,11 +10,11 @@ Message {
     user_id int references users(id);
     message text;
 
-    static findAllByUser($id) {
+    static findAllByUser($id) : Message[] {
         SELECT * FROM $this WHERE user_id = $id
     }
     
-    static create($user_id, $message) {
+    static create($user_id, $message) : null {
         INSERT INTO $this (user_id, message) VALUES ($user_id, $message)
     }
 
@@ -23,7 +23,6 @@ Message {
 /**
  * hello world
  */
-@ClassQL\Filters\SingleValue
-say_hello_to($name) {
+say_hello_to($name) : value {
     SELECT 'hello' || $name
 }

@@ -9,14 +9,24 @@
 function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php if (isset($query)): ?>
     $stmt = <?php echo $scope . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
-    $data = new \ClassQL\Collection($stmt, '<?php echo $query['returns'] ?>');
+<?php if ($query['returns']['type'] != 'null'): ?>
+<?php if ($query['returns']['type'] == 'collection'): ?>
+    $data = new \ClassQL\Collection($stmt, '<?php echo $query['returns']['value'] ?>');
+<?php elseif ($query['returns']['type'] == 'class'): ?>
+    $data = new <?php echo $query['returns']['value'] ?>($stmt->fetch(PDO::FETCH_ASSOC));
+<?php elseif ($query['returns']['type'] == 'value'): ?>
+    $data = $stmt->fetchColumn();
+<?php endif; ?>
+<?php endif; ?>
+<?php else: ?>
+    $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
+<?php endif; ?>
+<?php if (!isset($query) || $query['returns']['type'] != 'null'):?>
 <?php if (!empty($filters)): ?>
     return <?php echo $scope . $filter_func_name; ?>($data);
 <?php else: ?>
     return $data;
 <?php endif; ?>
-<?php else: ?>
-    return <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
 <?php endif; ?>
 }
 <?php if (isset($query)): ?>
