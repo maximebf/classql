@@ -7,7 +7,7 @@ namespace Models;
 Message {
 
     id int;
-    user_id int references users(id);
+    user_id int;
     message text;
 
     static findAllByUser($id) : Message[] {
