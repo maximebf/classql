@@ -37,6 +37,11 @@ class ContainerContext extends Context
         $this->_latestModifiers[] = $value;
     }
     
+    public function tokenPublic($value)
+    {
+        $this->_latestModifiers[] = $value;
+    }
+    
     public function tokenPrivate($value)
     {
         $this->_latestModifiers[] = $value;

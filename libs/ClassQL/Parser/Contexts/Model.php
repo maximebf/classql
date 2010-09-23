@@ -113,13 +113,19 @@ class Model extends ContainerContext
         
         // parse parameters (until the next parentClose)
         $params = $this->enterContext('Parameters');
+        $modifiers = $this->_latestModifiers;
+        
+        if (!count(array_intersect(array('private', 'public', 'protected'), $modifiers))) {
+            $modifiers[] = 'public';
+        }
         
         $this->_methods[$this->_nextName] = array_merge(
             $this->enterContext('Operation'), // parses the function body
             array(
+                'type' => 'method',
                 'name' => $this->_nextName,
                 'params' => $params,
-                'modifiers' => $this->_latestModifiers,
+                'modifiers' => $modifiers,
                 'filters' => $this->_latestFilters,
                 'docComment' => $this->_latestDocComment
             )

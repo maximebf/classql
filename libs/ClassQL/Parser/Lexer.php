@@ -39,6 +39,7 @@ class Lexer extends BaseLexer
             'commentClose' => '\*\/',
             'static' => "\bstatic\b",
             'abstract' => "\babstract\b",
+            'public' => "\bpublic\b",
             'private' => "\bprivate\b",
             'protected' => "\bprotected\b",
             'virtual' => "\bvirtual\b",

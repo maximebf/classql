@@ -47,11 +47,6 @@ See a detailed example in the demo folder
             $SELECT FROM $this WHERE id = $id
         }
         
-        // returns a User object with a Message property containing a collection of Message objects
-        static find_by_id_with_messages($id) : User + Message[] {
-            $SELECT, m.message FROM $this JOIN messages m ON m.user_id = $this.id WHERE $this.id = $id
-        }
-        
         static count() : value {
             SELECT COUNT(*) FROM $this
         }
@@ -73,25 +68,9 @@ See a detailed example in the demo folder
     
 ### Usage
 
-    $user = new User();
-    $user->email = 'example@example.com';
-    $user->password = md5('azerty');
-    $user->save();
-
-    $message = new Message();
-    $message->user_id = $user->id;
-    $message->message = 'hello world';
-    $message->save();
-
     $user = User::find_by_id(1);
     echo $user->email;
     $messages = $user->find_messages();
-    
-    $user = User::find_by_id_with_messages(1);
-    echo $user->email;
-    foreach ($user->Message as $message) {
-        // ...
-    }
     
 ## Models definition syntax
 

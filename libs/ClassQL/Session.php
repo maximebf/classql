@@ -25,8 +25,8 @@ use ClassQL\Parser\Parser,
 
 final class Session
 {
-    /** @var PDO */
-    private static $_pdo;
+    /** @var Connection */
+    private static $_connection;
     
     /** @var Cache */
     private static $_cache;
@@ -50,18 +50,19 @@ final class Session
         StreamWrapper::register('classql');
     }
     
-    public static function configure(PDO $pdo, Cache $cache = null, 
+    public static function configure(Connection $connection, Cache $cache = null, 
         Parser $parser = null, Generator $generator = null)
     {
-        self::$_pdo = $pdo;
+        self::registerStreamWrapper();
+        self::$_connection = $connection;
         self::$_cache = $cache ?: new NullCache();
         self::$_parser = $parser ?: new Parser();
         self::$_generator = $generator ?: new \ClassQL\Generator\PHPGenerator();
     }
     
-    public static function getPDO()
+    public static function getConnection()
     {
-        return self::$_pdo;
+        return self::$_connection;
     }
     
     public static function getCache()

@@ -5,10 +5,10 @@
 /**<?php echo $docComment ?>
 */
 <?php endif; ?>
-<?php echo $this->_renderModifiers($modifiers, true); ?>
+<?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php if (isset($query)): ?>
-    $stmt = <?php echo $scope . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
+    $stmt = <?php echo $this->_renderScope($type, $modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 <?php if ($query['returns']['type'] != 'null'): ?>
 <?php if ($query['returns']['type'] == 'collection'): ?>
     $data = new \ClassQL\Collection($stmt, '<?php echo $query['returns']['value'] ?>');
@@ -23,7 +23,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php endif; ?>
 <?php if (!isset($query) || $query['returns']['type'] != 'null'):?>
 <?php if (!empty($filters)): ?>
-    return <?php echo $scope . $filter_func_name; ?>($data);
+    return <?php echo $this->_renderScope($type, $modifiers) . $filter_func_name; ?>($data);
 <?php else: ?>
     return $data;
 <?php endif; ?>
@@ -35,13 +35,13 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
  * Creates and executes the statement associated to {@see <?php echo $name ?>()} 
  * @return PDOStatement
  */
-<?php echo $this->_renderModifiers($modifiers, true); ?>
+<?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>) {
-    $stmt = <?php echo $scope . $statement_func_name ?>();
+    $stmt = <?php echo $this->_renderScope($type, $modifiers) . $statement_func_name ?>();
     $params = array(<?php echo $this->_renderQueryParams($query['vars'], array_keys($params)) ?>);
     
     if ($stmt->execute($params) === false) {
-        throw new \ClassQL\DatabaseException($stmt);
+        throw new \ClassQL\Database\Exception($stmt);
     }
     
     return $stmt;
@@ -51,14 +51,10 @@ function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>
  * Creates the statement associated to {@see <?php echo $name ?>()} 
  * @return PDOStatement
  */
-<?php echo $this->_renderModifiers($modifiers, true); ?>
+<?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $statement_func_name; ?>() {
-<?php if (empty($scope)): ?>
-    $query = '<?php echo $this->_renderQuery($query, $query['vars']); ?>';
-<?php else: ?>
-    $query = <?php echo $this->_renderQueryInClass($query, array_keys($params)) ?>;
-<?php endif; ?>
-    return \ClassQL\Session::getPDO()->prepare($query);
+    $query = '<?php echo $this->_renderQuery($query); ?>';
+    return \ClassQL\Session::getConnection()->prepare($query);
 }
 <?php endif; ?>
 <?php if (!empty($filters)): ?>
@@ -67,7 +63,7 @@ function <?php echo $statement_func_name; ?>() {
  * Filters the fetched data for {@see <?php echo $name ?>()} 
  * @return array
  */
-<?php echo $this->_renderModifiers($modifiers, true); ?>
+<?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $filter_func_name; ?>($data) {
     $filters = array(
 <?php foreach ($filters as $filter): ?>

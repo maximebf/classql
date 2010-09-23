@@ -71,6 +71,15 @@ class Parser extends StringParser
             'implements' => array()
         ), $model);
         
+        foreach ($model['vars'] as &$var) {
+            if ($var['type'] !== 'sql') {
+                continue;
+            }
+
+            $query = $this->_replaceVars($var['value'], $model['vars']);
+            $var['value'] = $query['sql'];
+        }
+        
         foreach ($model['methods'] as &$method) {
             if (isset($method['query'])) {
                 if (!isset($method['query']['returns'])) {
@@ -83,6 +92,10 @@ class Parser extends StringParser
                         'type' => 'collection',
                         'value' => $this->_baseModelClass
                     );
+                }
+                
+                if (isset($method['query'])) {
+                    $method['query'] = $this->_replaceVars($method['query'], $model['vars']);
                 }
             }
         }
@@ -100,5 +113,25 @@ class Parser extends StringParser
                 );
         }
         return $function;
+    }
+    
+    protected function _replaceVars($query, $vars)
+    {
+        $sql = $query['sql'];
+        $queryVars = array_flip($query['vars']);
+        
+        foreach ($query['vars'] as $var) {
+            $varname = $var;
+            if (strpos($var, '[')) {
+                $varname = substr($var, 0, strpos($var, '['));
+            }
+            
+            if (isset($vars[$varname])) {
+                $sql = str_replace($var, $vars[$varname]['value'], $sql);
+                unset($queryVars[$var]);
+            }
+        }
+        
+        return array_merge($query, array('sql' => $sql, 'vars' => array_flip($queryVars)));
     }
 }

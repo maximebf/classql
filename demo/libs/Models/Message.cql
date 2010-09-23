@@ -4,7 +4,7 @@ namespace Models;
 /**
  * Represents a message sent by the user
  */
-Message {
+Message as messages {
 
     id int;
     user_id int;
@@ -14,15 +14,9 @@ Message {
         SELECT * FROM $this WHERE user_id = $id
     }
     
-    static create($user_id, $message) : null {
+    @UpdateWithLastIndex(id)
+    insert() : null {
         INSERT INTO $this (user_id, message) VALUES ($user_id, $message)
     }
 
-}
-
-/**
- * hello world
- */
-say_hello_to($name) : value {
-    SELECT 'hello' || $name
 }
