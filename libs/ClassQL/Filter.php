@@ -19,10 +19,14 @@
  
 namespace ClassQL;
 
-class Filter extends Collection
+abstract class Filter extends FilterIterator
 {
-    public function __construct(Collection $collection, array $params = array())
+    /** @var array */
+    protected $_args;
+    
+    public function __construct(Iterator $iterator, array $args = array())
     {
-        
+        parent::__construct($iterator);
+        $this->_args = $args;
     }
 }

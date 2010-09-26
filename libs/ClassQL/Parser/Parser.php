@@ -53,7 +53,7 @@ class Parser extends StringParser
     protected function _compute($descriptor)
     {
         foreach ($descriptor['objects'] as &$object) {
-            if ($object['type'] == 'model') {
+            if ($object['type'] == 'class') {
                 $object = $this->_computeModel($object);
             } else {
                 $object = $this->_computeFunction($object);
@@ -85,14 +85,11 @@ class Parser extends StringParser
                 if (!isset($method['query']['returns'])) {
                     $method['query']['returns'] = array(
                         'type' => 'collection',
-                        'value' => $model['name']
-                    );
-                } else if ($method['query']['returns']['type'] == 'object') {
-                    $method['query']['returns'] = array(
-                        'type' => 'collection',
-                        'value' => $this->_baseModelClass
+                        'value' => 'self'
                     );
                 }
+                $method['query']['returns'] = $this->_computeReturns($method['query']['returns'],
+                    '\\' . $model['namespace'] . '\\' . $model['name']);
                 
                 if (isset($method['query'])) {
                     $method['query'] = $this->_replaceVars($method['query'], $model['vars']);
@@ -105,14 +102,35 @@ class Parser extends StringParser
     
     protected function _computeFunction($function)
     {
-        if (isset($function['query']) && 
-            (!isset($function['query']['returns']) || $function['query']['returns']['type'] == 'object')) {
-                $function['query']['returns'] = array(
-                    'type' => 'collection',
-                    'value' => $this->_baseModelClass
-                );
+        if (isset($function['query'])) {
+            if (!isset($function['query']['returns'])) {
+                $function['query']['returns'] = array('type' => 'object');
+            }
+            $function['query']['returns'] = $this->_computeReturns($function['query']['returns']);
         }
         return $function;
+    }
+    
+    protected function _computeReturns($returns, $className = '\stdClass')
+    {
+        if ($returns['type'] == 'class' || $returns['type'] == 'collection') {
+            if ($returns['value'] == 'self') {
+                $returns['value'] = $className;
+            }
+        } else if ($returns['type'] == 'object') {
+            $returns = array(
+                'type' => 'collection',
+                'value' => $this->_baseModelClass
+            );
+        }
+        
+        if (isset($returns['with'])) {
+            foreach ($returns['with'] as &$with) {
+                $with = $this->_computeReturns($with);
+            }
+        }
+        
+        return $returns;
     }
     
     protected function _replaceVars($query, $vars)
@@ -133,5 +151,12 @@ class Parser extends StringParser
         }
         
         return array_merge($query, array('sql' => $sql, 'vars' => array_flip($queryVars)));
+    }
+    
+    protected function _applyAttributes($descriptor)
+    {
+        foreach ($descriptor['attributes'] as $attribute) {
+            
+        }
     }
 }

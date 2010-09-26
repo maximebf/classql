@@ -54,6 +54,7 @@ class File extends ContainerContext
             $this->enterContext('Prototype'),
             array(
                 'name' => $value,
+                'namespace' => $this->_namespace,
                 'modifiers' => $this->_latestModifiers,
                 'filters' => $this->_latestFilters,
                 'docComment' => $this->_latestDocComment

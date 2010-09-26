@@ -17,12 +17,35 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Generator;
 
-class Collection
+abstract class AbstractGenerator implements Generator
 {
-    public function __construct(PDOStatement $statement, $objectClass = '\ClassQL\Model')
+    public $templates = array();
+    
+    /**
+     * (non-PHPdoc)
+     * @see ClassQL/Generator/ClassQL\Generator.Generator::generate()
+     */
+    public function generate(array $descriptor)
     {
-        
+        return $this->_generateFile($descriptor);
+    }
+    
+    abstract protected function _generateFile(array $descriptor);
+    
+    /**
+     * Renders a template
+     * 
+     * @param string $template
+     * @param array $vars
+     * @return string
+     */
+    protected function _renderTemplate($template, array $vars = array())
+    {
+        extract($vars);
+        ob_start();
+        include $this->templates[$template];
+        return ob_get_clean();
     }
 }

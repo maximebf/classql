@@ -12,6 +12,11 @@ class <?php echo $name; ?> extends <?php echo $extends ?> {
     public static $tableName = '<?php echo $table ?>';
     
 <?php endif; ?>
+    /** 
+     * @var array 
+     */
+    public static $columns = array('<?php echo implode("', '", array_keys($columns))?>');
+    
 <?php foreach ($vars as $var): ?>
 <?php if ($var['type'] == 'sql'): ?>
     /**

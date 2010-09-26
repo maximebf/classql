@@ -60,41 +60,20 @@ class Model extends ContainerContext
         $this->_resetLatests();
     }
     
-    public function tokenCurlyOpen()
+    public function tokenEqual()
     {
         if ($this->_nextName === null) {
             $this->_syntaxError('curlyOpen');
         }
-        // curlyOpen after a string means a variable (sql string)
+        // equal after a string means a variable
         
         if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
             throw new Exception("Cannot redeclare '$this->_nextName'");
         }
         
-        $this->_vars['$' . $this->_nextName] = array(
-            'type' => 'sql',
-            'name' => '$' . $this->_nextName,
-            'value' => $this->enterContext('Block')
-        );
-        
-        $this->_nextName = null;
-    }
-    
-    public function tokenArrayOpen()
-    {
-        if ($this->_nextName === null) {
-            $this->_syntaxError('curlyOpen');
-        }
-        // arrayOpen after a string means a variable (array)
-        
-        if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
-            throw new Exception("Cannot redeclare '$this->_nextName'");
-        }
-        
-        $this->_vars['$' . $this->_nextName] = array(
-            'type' => 'array',
-            'name' => '$' . $this->_nextName,
-            'value' => $this->enterContext('ArrayContext')
+        $this->_vars['$' . $this->_nextName] = array_merge(
+            $this->enterContext('Variable'),
+            array('name' => '$' . $this->_nextName)
         );
         
         $this->_nextName = null;

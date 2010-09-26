@@ -23,13 +23,27 @@ class Model
 {
     public function __construct(array $data = array())
     {
-        $this->_updateProperties($data);
-    }
-    
-    public function _updateProperties($data)
-    {
         foreach ($data as $key => $value) {
             $this->{$key} = $value;
+        }
+    }
+    
+    public function save()
+    {
+        if (!property_exists(get_class(), 'primaryKey')) {
+            throw new Exception("Missing static property 'primaryKey' for 'ClassQL\Model::save()'");
+        }
+        
+        if (empty($this->{self::$primaryKey})) {
+            if (!method_exists($this, 'insert')) {
+                throw new Exception("Missing method 'insert' for 'ClassQL\Model::save()'");
+            }
+            $this->insert();
+        } else {
+            if (!method_exists($this, 'update')) {
+                throw new Exception("Missing method 'update' for 'ClassQL\Model::save()'");
+            }
+            $this->update();
         }
     }
 }

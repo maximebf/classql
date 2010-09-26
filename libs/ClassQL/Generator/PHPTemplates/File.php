@@ -7,6 +7,7 @@
 <?php if ($namespace !== null) printf('namespace %s;', $namespace); ?>
 
 <?php if (count($uses)): ?>
+
 use <?php echo implode(",\n    ", $uses); ?>;
 <?php endif; ?>
 

@@ -17,10 +17,27 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Filters;
+namespace ClassQL\Generator;
 
-use ClassQL\Filter;
-
-class UpdateWithLastIndex extends Filter
+class SQLGenerator extends AbstractGenerator
 {
+    public $templates = array(
+        'table' => 'ClassQL/Generator/SQLTemplates/Table.php'
+    );
+    
+    public function _generateFile(array $descriptor)
+    {
+        $sql = '';
+        foreach ($descriptor['objects'] as $object) {
+            if ($object['type'] == 'class') {
+                $sql .= $this->_generateTable($object);
+            }
+        }
+        return $sql;
+    }
+    
+    protected function _generateTable($descriptor)
+    {
+        return $this->_renderTemplate('table', $descriptor);
+    }
 }

@@ -31,11 +31,6 @@ class ReturnsGroup extends Context
         $this->_return = array('type' => 'null');
     }
     
-    public function tokenReturnsValue()
-    {
-        $this->_return = array('type' => 'value');
-    }
-    
     public function tokenWildcard()
     {
         $this->_return = array('type' => 'object');
@@ -43,10 +38,14 @@ class ReturnsGroup extends Context
     
     public function tokenString($value)
     {
-        $this->_return = array(
-            'type' => 'class',
-            'value' => $value
-        );
+        if (in_array($value, array('null', 'update', 'value', 'last_insert_id'))) {
+            $this->_return = array('type' => $value);
+        } else {
+            $this->_return = array(
+                'type' => 'class',
+                'value' => $value
+            );
+        }
     }
     
     public function tokenArrayOpen()

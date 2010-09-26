@@ -3,7 +3,7 @@ namespace Models;
 
 User as users {
     
-    id integer;
+    id int primary key auto_increment;
     email text;
     password text;
     firstName text;
@@ -11,16 +11,17 @@ User as users {
     created timestamp;
     role integer;
     
-    roles [member => 1, admin => 2]
-    fullName { firstName || ' ' || lastName }
-    selectColumns { id, email, $fullName }
-    SELECT { SELECT $selectColumns }
+    primaryKey = id;
+    roles = [member => 1, admin => 2]
+    fullName = CONCAT(firstName, ' ', lastName) as fullName;
+    selectColumns = id, email, firstName, lastName, $fullName;
+    SELECT = SELECT $selectColumns;
     
-    static findAll() : User[] {
+    static findAll() : self[] {
         $SELECT FROM $this
     }
 
-    static findById($id) : User {
+    static findById($id) : self {
         $SELECT FROM $this WHERE id = $id
     }
     
@@ -28,10 +29,19 @@ User as users {
         SELECT COUNT(*) FROM $this
     }
     
-    @UpdateWithLastIndex(id)
-    insert() : null {
+    insert() : last_insert_id {
         INSERT INTO $this (email, password, firstName, lastName, created)
-            VALUES ($email, MD5($password), $firstName, $lastName, NOW())
+        VALUES ($email, MD5($password), $firstName, $lastName, NOW())
+    }
+    
+    update() : null {
+        UPDATE $this 
+        SET email = $email, firstName = $firstName, lastName = $lastName 
+        WHERE id = $id
+    }
+    
+    fetchPassword() : update {
+        SELECT password FROM $this WHERE id = $id
     }
     
     findMessages() -> Message::findAllByUser($id)

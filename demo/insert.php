@@ -1,13 +1,14 @@
 <?php 
 
-require_once __DIR__ . '/init.php';
+require_once __DIR__ . '/bootstrap.php';
+
+require_once 'classql://Models/Message.cql';
 
 $user = new User();
 $user->email = 'example@example.com';
 $user->password = 'azerty';
+$user->firstName = 'john';
+$user->lastName = 'doe';
 $user->insert();
 
-$message = new Message();
-$message->user_id = $user->id;
-$message->message = 'hello world';
-$message->insert();
+$user->addMessage('hello world');

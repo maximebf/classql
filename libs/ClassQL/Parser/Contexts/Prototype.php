@@ -92,7 +92,7 @@ class Prototype extends Context
     {
         // curlyOpen means it's a class
         $model = array_merge($this->_proto, $this->enterContext('Model'));
-        $model['type'] = 'model';
+        $model['type'] = 'class';
         $this->exitContext($model);
     }
 }

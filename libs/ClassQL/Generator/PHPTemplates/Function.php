@@ -11,19 +11,28 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
     $stmt = <?php echo $this->_renderScope($type, $modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 <?php if ($query['returns']['type'] != 'null'): ?>
 <?php if ($query['returns']['type'] == 'collection'): ?>
-    $data = new \ClassQL\Collection($stmt, '<?php echo $query['returns']['value'] ?>');
+    $data = $stmt->fetchAll(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
 <?php elseif ($query['returns']['type'] == 'class'): ?>
-    $data = new <?php echo $query['returns']['value'] ?>($stmt->fetch(PDO::FETCH_ASSOC));
+    $stmt->setFetchMode(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
+    $data = $stmt->fetch();
 <?php elseif ($query['returns']['type'] == 'value'): ?>
     $data = $stmt->fetchColumn();
+<?php elseif ($query['returns']['type'] == 'last_insert_id'): ?>
+    $this->id = \ClassQL\Session::getConnection()->lastInsertId();
+<?php elseif ($query['returns']['type'] == 'update'): ?>
+    if (($data = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
+        }
+    }
 <?php endif; ?>
 <?php endif; ?>
 <?php else: ?>
     $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
 <?php endif; ?>
-<?php if (!isset($query) || $query['returns']['type'] != 'null'):?>
+<?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'class', 'collection'))):?>
 <?php if (!empty($filters)): ?>
-    return <?php echo $this->_renderScope($type, $modifiers) . $filter_func_name; ?>($data);
+    return <?php echo $this->_renderScope($type, $modifiers) . $filter_func_name; ?>(new ArratIterator($data));
 <?php else: ?>
     return $data;
 <?php endif; ?>
@@ -72,7 +81,7 @@ function <?php echo $filter_func_name; ?>($data) {
     );
     
     foreach ($filters as $className => $args) {
-        if (!is_subclass_of('$className', '\ClassQL\Filter')) {
+        if (!is_subclass_of($className, '\ClassQL\Filter')) {
             throw new \ClassQL\Exception("Filter '$className' must subclass '\ClassQL\Filter'");
         }
         $data = new $className($data, $args);

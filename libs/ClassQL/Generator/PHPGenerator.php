@@ -19,24 +19,13 @@
  
 namespace ClassQL\Generator;
 
-class PHPGenerator implements Generator
+class PHPGenerator extends AbstractGenerator
 {
-    protected $_templates = array(
+    public $templates = array(
         'file'      => 'ClassQL/Generator/PHPTemplates/File.php',
         'function'  => 'ClassQL/Generator/PHPTemplates/Function.php',
         'class'     => 'ClassQL/Generator/PHPTemplates/Class.php',
     );
-    
-    protected $_namespace;
-    
-    /**
-     * (non-PHPdoc)
-     * @see ClassQL/Generator/ClassQL\Generator.Generator::generate()
-     */
-    public function generate(array $descriptor)
-    {
-        return $this->_generateFile($descriptor);
-    }
     
     /**
      * Generates a PHP file from the output of the parser
@@ -44,7 +33,7 @@ class PHPGenerator implements Generator
      * @param array $descriptor
      * @return string
      */
-    protected function _generateFile($descriptor)
+    protected function _generateFile(array $descriptor)
     {
         foreach ($descriptor['objects'] as &$object) {
             if ($object['type'] == 'function') {
@@ -100,21 +89,6 @@ class PHPGenerator implements Generator
     protected function _generateOperation($operation)
     {
         return $this->_renderTemplate('function', $operation);
-    }
-    
-    /**
-     * Renders a template
-     * 
-     * @param string $template
-     * @param array $vars
-     * @return string
-     */
-    protected function _renderTemplate($template, array $vars = array())
-    {
-        extract($vars);
-        ob_start();
-        include $this->_templates[$template];
-        return ob_get_clean();
     }
     
     /**
@@ -183,8 +157,11 @@ class PHPGenerator implements Generator
      * @param array $item
      * @return string
      */
-    protected function _getRenderedArgsItem($item)
+    protected function _getRenderedArgsItem($item, $varsInScope = array())
     {
+        if ($item['type'] == 'variable' && !in_array($item['value'], $varsInScope)) {
+            return '$this->' . substr($item['value'], 1);
+        }
         if ($item['type'] == 'array') {
             return $this->_renderArray($item['value']);
         }

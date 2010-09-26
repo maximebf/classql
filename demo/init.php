@@ -1,18 +1,14 @@
-<?php
+<?php 
 
-set_include_path(implode(PATH_SEPARATOR, array(
-    __DIR__ . '/libs',
-    __DIR__ . '/../libs',
-    __DIR__ . '/../vendor/parsec/libs',
-    get_include_path()
-)));
-
-require_once 'ClassQL/Session.php';
-ClassQL\Session::registerAutoloader();
+require_once __DIR__ . '/bootstrap.php';
 
 use ClassQL\Session,
-    ClassQL\Database\Connection;
+    ClassQL\Parser\Parser,
+    ClassQL\Generator\SQLGenerator;
 
-Session::configure(
-    new Connection('mysql:host=192.168.56.101;dbname=classql', 'root', 'root')
-);
+$parser = new Parser();
+$descriptor = $parser->parseFile($_SERVER['argv'][1]);
+$generator = new SQLGenerator();
+$sql = $generator->generate($descriptor);
+
+Session::getConnection()->exec($sql);
