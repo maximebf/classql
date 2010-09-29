@@ -20,31 +20,30 @@
 namespace ClassQL\CLI;
 
 use ClassQL\CLI,
-    ClassQL\Parser\Parser,
+    ClassQL\Session,
     ClassQL\Generator\PHPGenerator,
     ClassQL\Generator\SQLGenerator;
 
 class Generate extends CLI
 {
-    /** @var Parser */
-    protected $_parser;
-    
-    public function __construct()
-    {
-        $this->_parser = new Parser();
-    }
-    
     public function executePhp($args)
     {
-        $descriptor = $this->_parser->parseFile($args[0]);
+        $descriptor = Session::getParser()->parseFile($args[0]);
         $generator = new PHPGenerator();
         $this->println($generator->generate($descriptor));
     }
     
-    public function executeSql($args)
+    public function executeSqlCreate($args)
     {
-        $descriptor = $this->_parser->parseFile($args[0]);
+        $descriptor = Session::getParser()->parseFile($args[0]);
         $generator = new SQLGenerator();
         $this->println($generator->generate($descriptor));
+    }
+    
+    public function executeSqlDrop($args)
+    {
+        $descriptor = Session::getParser()->parseFile($args[0]);
+        $generator = new SQLGenerator();
+        $this->println($generator->generateDrop($descriptor));
     }
 }

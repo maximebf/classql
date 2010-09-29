@@ -19,11 +19,32 @@
  
 namespace ClassQL;
 
-abstract class Cache
+/**
+ * Interface for cache backends
+ */
+interface Cache
 {
-    abstract public function has($filename);
+    /**
+     * Checks if a file is already cached
+     * 
+     * @param string $filename
+     * @return bool
+     */
+    public function has($filename);
     
-    abstract public function get($filename);
+    /**
+     * Returns the content of a cached file
+     * 
+     * @param string $filename
+     * @return string
+     */
+    public function get($filename);
     
-    abstract public function set($filename, $content);
+    /**
+     * Caches a file
+     * 
+     * @param string $filename
+     * @param string $content
+     */
+    public function set($filename, $content);
 }

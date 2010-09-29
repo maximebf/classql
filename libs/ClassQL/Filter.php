@@ -19,11 +19,23 @@
  
 namespace ClassQL;
 
+use FilterIterator,
+    Iterator;
+
+/**
+ * Abstract class to create filters
+ * 
+ * @see FilterIterator
+ */
 abstract class Filter extends FilterIterator
 {
     /** @var array */
     protected $_args;
     
+    /**
+     * @param Iterator $iterator
+     * @param array $args
+     */
     public function __construct(Iterator $iterator, array $args = array())
     {
         parent::__construct($iterator);

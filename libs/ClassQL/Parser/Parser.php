@@ -24,7 +24,7 @@ use Parsec\StringParser,
 
 class Parser extends StringParser
 {
-    protected $_baseModelClass = '\ClassQL\Model';
+    protected $_baseModelClass = '\stdClass';
     
     public function __construct()
     {

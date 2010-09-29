@@ -17,33 +17,51 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Cache;
 
-class FileCache extends Cache
+/**
+ * File backend
+ */
+class File implements Cache
 {
     /** @var string */
     protected $_cacheDir;
     
+    /**
+     * @param string $cacheDir
+     */
     public function __construct($cacheDir = '/tmp')
     {
-        $this->_cacheDir = $cacheDir;
+        $this->setDirectory($cacheDir);
     }
     
+    /**
+     * @param string $dir
+     */
     public function setDirectory($dir)
     {
-        $this->_cacheDir = $dir;
+        $this->_cacheDir = rtrim($dir, DIRECTORY_SEPARATOR);
     }
     
+    /**
+     * @return string
+     */
     public function getDirectory()
     {
         return $this->_cacheDir;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function has($filename)
     {
         return file_exists($this->getCacheName($filename));
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function get($filename)
     {
         if (!$this->has($filename)) {
@@ -52,11 +70,20 @@ class FileCache extends Cache
         return file_get_contents($this->getCacheName($filename));
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function set($filename, $content)
     {
         file_put_contents($this->getCacheName($filename), $content);
     }
     
+    /**
+     * Returns the filename of the cached file
+     * 
+     * @param string $filename
+     * @return string
+     */
     public function getCacheName($filename)
     {
         return $this->_cacheDir . DIRECTORY_SEPARATOR . md5(realpath($filename));

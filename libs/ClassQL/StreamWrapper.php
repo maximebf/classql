@@ -19,6 +19,9 @@
  
 namespace ClassQL;
 
+/**
+ * Allows to loads models using the classql:// protocol
+ */
 class StreamWrapper
 {
     /** @var string */
@@ -56,11 +59,16 @@ class StreamWrapper
         }
         
         $cache = Session::getCache();
-        if (($this->_content = $cache->get($filename)) === false) {
-            $parser = Session::getParser();
-            $generator = Session::getGenerator();
-            $descriptor = $parser->parseFile($filename);
-            $this->_content = $generator->generate($descriptor);
+        if ($cache !== null && ($this->_content = $cache->get($filename)) !== false) {
+            return true;
+        }
+        
+        $parser = Session::getParser();
+        $generator = Session::getGenerator();
+        $descriptor = $parser->parseFile($filename);
+        $this->_content = $generator->generate($descriptor);
+        
+        if ($cache !== null) {
             $cache->set($filename, $this->_content);
         }
         

@@ -1,0 +1,1 @@
+DROP TABLE <?php echo $table ?>;

@@ -17,21 +17,11 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Database;
 
-class NullCache extends Cache
+interface Profiler
 {
-    public function has($filename)
-    {
-        return false;
-    }
+    public function startQuery($query, $params);
     
-    public function get($filename) 
-    {
-        return false;
-    }
-    
-    public function set($filename, $content) 
-    {
-    }
+    public function stopQuery();
 }

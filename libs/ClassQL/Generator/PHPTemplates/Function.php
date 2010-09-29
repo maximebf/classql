@@ -26,6 +26,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
         }
     }
 <?php endif; ?>
+    $stmt->closeCursor();
 <?php endif; ?>
 <?php else: ?>
     $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
@@ -48,11 +49,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>) {
     $stmt = <?php echo $this->_renderScope($type, $modifiers) . $statement_func_name ?>();
     $params = array(<?php echo $this->_renderQueryParams($query['vars'], array_keys($params)) ?>);
-    
-    if ($stmt->execute($params) === false) {
-        throw new \ClassQL\Database\Exception($stmt);
-    }
-    
+    $stmt->execute($params);
     return $stmt;
 }
 

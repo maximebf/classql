@@ -27,23 +27,29 @@ class SQLGenerator extends AbstractGenerator
     public function __construct()
     {
         $this->_templates =  array(
-            'table' => __DIR__ . '/SQLTemplates/Table.php'
+            'create' => __DIR__ . '/SQLTemplates/CreateTable.php',
+            'drop' => __DIR__ . '/SQLTemplates/DropTable.php'
         );
     }
     
-    public function _generateFile(array $descriptor)
+    public function generateDrop($descriptor)
+    {
+        return $this->_generateFile($descriptor, 'drop');
+    }
+    
+    public function _generateFile(array $descriptor, $template = 'create')
     {
         $sql = '';
         foreach ($descriptor['objects'] as $object) {
             if ($object['type'] == 'class') {
-                $sql .= $this->_generateTable($object);
+                $sql .= $this->_generateTable($object, $template);
             }
         }
         return $sql;
     }
     
-    protected function _generateTable($descriptor)
+    protected function _generateTable($descriptor, $template = 'create')
     {
-        return $this->_renderTemplate('table', $descriptor);
+        return $this->_renderTemplate($template, $descriptor);
     }
 }

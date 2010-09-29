@@ -6,8 +6,8 @@ namespace Demo\Models;
  */
 Message as messages {
 
-    id int primary key auto_increment;
-    user_id int;
+    id integer primary key autoincrement;
+    user_id integer;
     message text;
 
     primaryKey = id;

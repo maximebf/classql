@@ -19,13 +19,22 @@
  
 namespace ClassQL;
 
+/**
+ * Creates and executes CLI commands
+ */
 class CLI
 {
+    /** @var array */
     private static $_commands = array(
         'schema' => '\ClassQL\CLI\Schema',
         'generate' => '\ClassQL\CLI\Generate'
     );
     
+    /**
+     * Parses the arguments then run the specified command
+     * 
+     * @param array $args
+     */
     public static function run(array $args = array())
     {
         $options = array();
@@ -56,14 +65,24 @@ class CLI
         return $instance->execute($args, $options);
     }
     
+    /**
+     * If not overriden, will execute the command specified
+     * as the first argument
+     * 
+     * Commands must be defined as methods named after the
+     * command, prefixed with execute (eg. create -> executeCreate)
+     * 
+     * @param array $args
+     * @param array $options
+     */
     public function execute(array $args, array $options = array())
     {
         if (!count($args)) {
             throw new Exception("Not enough arguments");
         }
         
-        $command = array_shift($args);
-        $method = 'execute' . ucfirst($command);
+        $command = str_replace(' ', '', ucwords(str_replace('-', ' ', array_shift($args))));
+        $method = 'execute' . $command;
         
         if (!method_exists($this, $method)) {
             throw new Exception("Command '$command' does not exist");
@@ -72,6 +91,11 @@ class CLI
         return call_user_func(array($this, $method), $args, $options);
     }
     
+    /**
+     * Prints a line
+     * 
+     * @param string $message
+     */
     public function println($message)
     {
         echo "$message\n";

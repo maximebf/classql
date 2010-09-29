@@ -44,7 +44,7 @@ class Loader
             }
             
             $filename = $dir . str_replace('\\', DIRECTORY_SEPARATOR, substr($classname, 
-                        strlen($namespace))). ($parse ? '.cql' : '.php');
+                        strlen($namespace))) . ($parse ? '.cql' : '.php');
                       
             if ($parse) {
                 $filename = 'classql://' . $filename;
