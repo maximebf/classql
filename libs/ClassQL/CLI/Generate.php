@@ -17,36 +17,34 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Generator;
+namespace ClassQL\CLI;
 
-abstract class AbstractGenerator implements Generator
+use ClassQL\CLI,
+    ClassQL\Parser\Parser,
+    ClassQL\Generator\PHPGenerator,
+    ClassQL\Generator\SQLGenerator;
+
+class Generate extends CLI
 {
-    /** @var array */
-    protected $_templates = array();
+    /** @var Parser */
+    protected $_parser;
     
-    /**
-     * (non-PHPdoc)
-     * @see ClassQL/Generator/ClassQL\Generator.Generator::generate()
-     */
-    public function generate(array $descriptor)
+    public function __construct()
     {
-        return $this->_generateFile($descriptor);
+        $this->_parser = new Parser();
     }
     
-    abstract protected function _generateFile(array $descriptor);
-    
-    /**
-     * Renders a template
-     * 
-     * @param string $template
-     * @param array $vars
-     * @return string
-     */
-    protected function _renderTemplate($template, array $vars = array())
+    public function executePhp($args)
     {
-        extract($vars);
-        ob_start();
-        include $this->_templates[$template];
-        return ob_get_clean();
+        $descriptor = $this->_parser->parseFile($args[0]);
+        $generator = new PHPGenerator();
+        $this->println($generator->generate($descriptor));
+    }
+    
+    public function executeSql($args)
+    {
+        $descriptor = $this->_parser->parseFile($args[0]);
+        $generator = new SQLGenerator();
+        $this->println($generator->generate($descriptor));
     }
 }

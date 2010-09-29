@@ -1,6 +1,6 @@
 <?php 
 
-require_once 'classql://Models/User.cql';
+namespace Demo;
 
 class User extends Models\User
 {

@@ -1,5 +1,5 @@
 
-namespace Models;
+namespace Demo\Models;
 
 /**
  * Represents a message sent by the user
@@ -9,7 +9,7 @@ Message as messages {
     id int primary key auto_increment;
     user_id int;
     message text;
-    
+
     primaryKey = id;
 
     static findAllByUser($id) : self[] {

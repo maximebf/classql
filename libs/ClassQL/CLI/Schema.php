@@ -17,33 +17,11 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Generator;
+namespace ClassQL\CLI;
 
-class SQLGenerator extends AbstractGenerator
+use ClassQL\CLI;
+
+class Schema extends CLI
 {
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->_templates =  array(
-            'table' => __DIR__ . '/SQLTemplates/Table.php'
-        );
-    }
     
-    public function _generateFile(array $descriptor)
-    {
-        $sql = '';
-        foreach ($descriptor['objects'] as $object) {
-            if ($object['type'] == 'class') {
-                $sql .= $this->_generateTable($object);
-            }
-        }
-        return $sql;
-    }
-    
-    protected function _generateTable($descriptor)
-    {
-        return $this->_renderTemplate('table', $descriptor);
-    }
 }

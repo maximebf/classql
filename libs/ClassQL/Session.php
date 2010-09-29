@@ -37,27 +37,24 @@ final class Session
     /** @var Generator */
     private static $_generator;
     
-    public static function registerAutoloader()
+    public static function start(array $options = array())
     {
-	    spl_autoload_register(function($className) {
-	        $filename = str_replace('\\', DIRECTORY_SEPARATOR, trim($className, '\\')) . '.php';
-	        require_once $filename;
-	    });
-    }
-    
-    public static function registerStreamWrapper()
-    {
-        StreamWrapper::register('classql');
-    }
-    
-    public static function configure(Connection $connection, Cache $cache = null, 
-        Parser $parser = null, Generator $generator = null)
-    {
-        self::registerStreamWrapper();
-        self::$_connection = $connection;
-        self::$_cache = $cache ?: new NullCache();
-        self::$_parser = $parser ?: new Parser();
-        self::$_generator = $generator ?: new \ClassQL\Generator\PHPGenerator();
+        $options = array_merge(array(
+            'dsn' => null,
+            'username' => null,
+            'password' => null,
+            'connection' => null,
+            'cache' => null,
+            'parser' => null,
+            'generator' => null
+        ), $options);
+        
+        StreamWrapper::register();
+        self::$_connection = $options['connection'] ?: 
+            new Connection($options['dsn'], $options['username'], $options['password']);
+        self::$_cache = $options['cache'] ?: new NullCache();
+        self::$_parser = $options['parser'] ?: new Parser();
+        self::$_generator = $options['generator'] ?: new \ClassQL\Generator\PHPGenerator();
     }
     
     public static function getConnection()

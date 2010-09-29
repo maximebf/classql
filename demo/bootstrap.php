@@ -1,18 +1,11 @@
 <?php
 
-set_include_path(implode(PATH_SEPARATOR, array(
-    __DIR__ . '/libs',
-    __DIR__ . '/../libs',
-    __DIR__ . '/../vendor/parsec/libs',
-    get_include_path()
-)));
+require_once __DIR__ . '/../libs/ClassQL/Loader.php';
+ClassQL\Loader::register('Parsec', __DIR__ . '/../vendor/parsec/libs/Parsec');
+ClassQL\Loader::register('ClassQL', __DIR__ . '/../libs/ClassQL');
+ClassQL\Loader::register('Demo/Models', __DIR__ . '/libs/Models', true);
+ClassQL\Loader::register('Demo', __DIR__ . '/libs');
 
-require_once 'ClassQL/Session.php';
-ClassQL\Session::registerAutoloader();
-
-use ClassQL\Session,
-    ClassQL\Database\Connection;
-
-Session::configure(
-    new Connection('mysql:host=192.168.56.101;dbname=classql', 'root', 'root')
-);
+ClassQL\Session::start(array(
+    'dsn' => 'sqlite:./demo.db'
+));

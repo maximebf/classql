@@ -35,9 +35,9 @@ class StreamWrapper
      *
      * @param string $protocol
      */
-    public static function register($protocol)
+    public static function register()
     {
-        stream_wrapper_register($protocol, 'ClassQL\StreamWrapper');
+        stream_wrapper_register('classql', 'ClassQL\StreamWrapper');
     }
     
     /**

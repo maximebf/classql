@@ -1,5 +1,5 @@
 
-namespace Models;
+namespace Demo\Models;
 
 User as users {
     

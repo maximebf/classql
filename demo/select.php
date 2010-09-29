@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-require_once 'classql://Models/Message.cql';
+use Demo\User;
 
 if (($user = User::findById(1)) === false) {
     exit("Not found\n");

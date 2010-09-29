@@ -21,11 +21,17 @@ namespace ClassQL\Generator;
 
 class PHPGenerator extends AbstractGenerator
 {
-    public $templates = array(
-        'file'      => 'ClassQL/Generator/PHPTemplates/File.php',
-        'function'  => 'ClassQL/Generator/PHPTemplates/Function.php',
-        'class'     => 'ClassQL/Generator/PHPTemplates/Class.php',
-    );
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->_templates =  array(
+            'file'      => __DIR__ . '/PHPTemplates/File.php',
+            'function'  => __DIR__ . '/PHPTemplates/Function.php',
+            'class'     => __DIR__ . '/PHPTemplates/Class.php',
+        );
+    }
     
     /**
      * Generates a PHP file from the output of the parser

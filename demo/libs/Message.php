@@ -1,6 +1,6 @@
 <?php 
 
-require_once 'classql://Models/Message.cql';
+namespace Demo;
 
 class Message extends Models\Message
 {
