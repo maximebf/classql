@@ -21,9 +21,13 @@ namespace ClassQL\Parser;
 
 use Parsec\Context as BaseContext;
 
+/**
+ * Base context
+ */
 class Context extends BaseContext
 {
-    public function tokenComment() {
+    public function tokenComment()
+    {
         $this->enterContext('Comment');
     }
     
@@ -32,21 +36,26 @@ class Context extends BaseContext
         $this->enterContext('MultilineComment');
     }
     
-    public function tokenEol()
-    {
-        
-    }
+    public function tokenEol() {}
     
-    public function tokenWhitespace()
-    {
-        
-    }
+    public function tokenWhitespace() {}
     
+    /**
+     * Throws a syntax error for all undefined token
+
+     * @param string $method
+     * @param array $args
+     */
     public function __call($method, $args)
     {
         $this->_syntaxError(lcfirst(substr($method, 5)));
     }
     
+    /**
+     * Throw a syntax error exception
+
+     * @param string $token
+     */
     protected function _syntaxError($token)
     {
         throw new Exception("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");

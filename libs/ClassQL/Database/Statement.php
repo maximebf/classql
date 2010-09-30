@@ -19,9 +19,40 @@
  
 namespace ClassQL\Database;
 
-use \PDOStatement;
+use \PDOStatement, 
+    \PDOException;
 
+/**
+ * Custom statement that adds profiling capabilities
+ */
 class Statement extends PDOStatement
 {
-    private function __construct() {}
+    /** @var Profiler */
+    protected $_profiler;
+    
+    /**
+     * @param Profiler $profiler
+     */
+    private function __construct(Profiler $profiler = null) 
+    {
+        $this->_profiler = $profiler;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function execute(array $params = array())
+    {
+        $this->_profiler !== null && $this->_profiler->startQuery($this->queryString, $params);
+    
+        try {
+            $returns = parent::execute($params);
+        } catch (PDOException $e) {
+            $this->_profiler !== null && $this->_profiler->stopQuery($e);
+            throw $e;
+        }
+    
+        $this->_profiler !== null && $this->_profiler->stopQuery();
+        return $returns;
+    }
 }

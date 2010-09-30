@@ -2,4 +2,6 @@
 .idea
 .project
 .settings
+demo/cache
 demo/demo.db
+demo/queries.log

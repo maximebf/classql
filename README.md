@@ -1,6 +1,5 @@
 # ClassQL
 
-**HIGHLY EXPERIMENTAL**
 THIS IS A WORK IN PROGRESS AND IN A STATE OF EXPERIMENTATION
 
 ClassQL is a new kind of ORM for PHP 5.3. Based on a custom syntax that wraps around SQL code, it allows
@@ -11,7 +10,7 @@ to create "object oriented" SQL. No PHP is involved in your models: you define t
 *  Easy to learn syntax
 *  Your own sql queries
 *  Custom filters to compute sql results
-*  Supports for eager loading
+*  Supports for eager loading (todo)
 *  Supports some kind of inheritance
 *  Complete PHP API
 *  PHP stream wrapper to include models as php classes
@@ -38,12 +37,12 @@ See a detailed example in the demo folder
         
         // by default, methods returns a collection of their defining class
         // the keyword $this will be replaced by the table name
-        static find_all() {
+        static findAll() {
             $SELECT FROM $this
         }
 
         // this methods returns a single User object
-        static find_by_id($id) : User {
+        static findById($id) : self {
             $SELECT FROM $this WHERE id = $id
         }
         
@@ -52,7 +51,7 @@ See a detailed example in the demo folder
         }
         
         // this method forwards the call to another one
-        find_messages() -> Message::find_all_by_user_id($id)
+        findMessages() -> Message::findAllByUserId($id)
     }
 
     Message {
@@ -61,36 +60,15 @@ See a detailed example in the demo folder
         user_id int references users(id);
         message text;
 
-        static find_all_by_user_id($id) {
+        static findAllByUserId($id) {
             SELECT * FROM $this WHERE user_id = $id
         }
     }
     
 ### Usage
 
-    $user = User::find_by_id(1);
+    $user = User::findById(1);
     echo $user->email;
-    $messages = $user->find_messages();
+    $messages = $user->findMessages();
     
-## Models definition syntax
-
-    [abstract|virtual] ModelName [as table_name] [extends ClassName] [implements Interface, ...] {
-
-        column_name column_type additional_sql_declaration;
-        
-        var_name { var_value }
-        
-        [@Filter]
-        [static] [private] function_name(params...) [ : returns_type ] {
-            sql_query
-        }
-        
-        [@Filter]
-        [static] [private] function_name(params...) -> TargetModelName::function_name(args ...)
-    }
-    
-    [@Filter]
-    func_name(params...) [ : returns_type ] {
-        sql_query
-    }
 

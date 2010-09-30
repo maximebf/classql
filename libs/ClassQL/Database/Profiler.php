@@ -23,5 +23,5 @@ interface Profiler
 {
     public function startQuery($query, $params);
     
-    public function stopQuery();
+    public function stopQuery(\Exception $exception = null);
 }

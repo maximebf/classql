@@ -22,10 +22,14 @@ namespace ClassQL\Parser;
 use Parsec\StringParser,
     Parsec\ContextFactory;
 
+/**
+ * Parses ClassQL's syntax and returns a descriptor array
+ */
 class Parser extends StringParser
 {
-    protected $_baseModelClass = '\stdClass';
-    
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         parent::__construct(
@@ -34,22 +38,44 @@ class Parser extends StringParser
         );
     }
     
+    /**
+     * Parses a ClassQL string and returns a computed descriptor
+     * 
+     * @return array
+     */
     public function parse($string)
     {
         $descriptor = $this->parseRaw($string);
         return $this->_compute($descriptor);
     }
     
+    /**
+     * Returns the raw descriptor from the parser
+     * 
+     * @return array
+     */
     public function parseRaw($string)
     {
         return parent::parse($string, 'File');
     }
     
+    /**
+     * Parses a file
+     * 
+     * @param string $filename
+     * @return array
+     */
     public function parseFile($filename)
     {
         return $this->parse(file_get_contents($filename));
     }
     
+    /**
+     * Computes a raw descriptor
+     * 
+     * @param array $descriptor
+     * @return array
+     */
     protected function _compute($descriptor)
     {
         foreach ($descriptor['objects'] as &$object) {
@@ -63,11 +89,17 @@ class Parser extends StringParser
         return $descriptor;
     }
     
+    /**
+     * Computes a raw model descriptor
+     * 
+     * @param array $model
+     * @return array
+     */
     protected function _computeModel($model)
     {
         $model = array_merge(array(
             'table' => $model['name'],
-            'extends' => $this->_baseModelClass,
+            'extends' => null,
             'implements' => array()
         ), $model);
         
@@ -100,6 +132,12 @@ class Parser extends StringParser
         return $model;
     }
     
+    /**
+     * Computes a raw function descriptor
+     * 
+     * @param array $function
+     * @return array
+     */
     protected function _computeFunction($function)
     {
         if (isset($function['query'])) {
@@ -111,6 +149,13 @@ class Parser extends StringParser
         return $function;
     }
     
+    /**
+     * Computes a raw returns descriptor
+     * 
+     * @param array $returns
+     * @param string $className
+     * @return array
+     */
     protected function _computeReturns($returns, $className = '\stdClass')
     {
         if ($returns['type'] == 'class' || $returns['type'] == 'collection') {
@@ -120,7 +165,7 @@ class Parser extends StringParser
         } else if ($returns['type'] == 'object') {
             $returns = array(
                 'type' => 'collection',
-                'value' => $this->_baseModelClass
+                'value' => '\stdClass'
             );
         }
         
@@ -133,6 +178,13 @@ class Parser extends StringParser
         return $returns;
     }
     
+    /**
+     * Replaces vars in a query
+     * 
+     * @param array $query
+     * @param array $vars
+     * @return array
+     */
     protected function _replaceVars($query, $vars)
     {
         $sql = $query['sql'];
@@ -151,12 +203,5 @@ class Parser extends StringParser
         }
         
         return array_merge($query, array('sql' => $sql, 'vars' => array_flip($queryVars)));
-    }
-    
-    protected function _applyAttributes($descriptor)
-    {
-        foreach ($descriptor['attributes'] as $attribute) {
-            
-        }
     }
 }

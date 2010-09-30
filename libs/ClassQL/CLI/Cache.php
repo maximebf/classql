@@ -17,12 +17,26 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Generator;
+namespace ClassQL\CLI;
 
-/**
- * Generator
- */
-interface Generator
+use ClassQL\CLI,
+    ClassQL\Session,
+    \DirectoryIterator;
+
+class Cache extends CLI
 {
-    public function generate(array $descriptor);
+    public function executeClear($args)
+    {
+        if (($cache = Session::getCache()) === null) {
+            $this->println('ERROR: No cache used');
+        }
+        
+        $dir = $cache->getDirectory();
+        foreach (new DirectoryIterator($dir) as $file) {
+            if (!$file->isFile() || substr($file->getFilename(), 0, 1) === '.') {
+                continue;
+            }
+            unlink($file->getPathname());
+        }
+    }
 }

@@ -19,6 +19,9 @@
  
 namespace ClassQL\Generator;
 
+/**
+ * Generates models as sql code
+ */
 class SQLGenerator extends AbstractGenerator
 {
     /**
@@ -32,11 +35,20 @@ class SQLGenerator extends AbstractGenerator
         );
     }
     
+    /**
+     * Generates DROP TABLE statements
+     * 
+     * @param array $descriptor
+     * @return string
+     */
     public function generateDrop($descriptor)
     {
         return $this->_generateFile($descriptor, 'drop');
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function _generateFile(array $descriptor, $template = 'create')
     {
         $sql = '';
@@ -48,6 +60,12 @@ class SQLGenerator extends AbstractGenerator
         return $sql;
     }
     
+    /**
+     * Generates sql code for a table
+     * 
+     * @param array $descriptor
+     * @param string $template
+     */
     protected function _generateTable($descriptor, $template = 'create')
     {
         return $this->_renderTemplate($template, $descriptor);

@@ -10,11 +10,8 @@ User as users {
     lastName text;
     created timestamp;
     
-    primaryKey = id;
-    roles = [member => 1, admin => 2]
     fullName = firstName || ' ' || lastName as fullName;
-    selectColumns = id, email, firstName, lastName, $fullName;
-    SELECT = SELECT $selectColumns;
+    SELECT = SELECT id, email, firstName, lastName, $fullName;
     
     static findAll() : self[] {
         $SELECT FROM $this
@@ -26,6 +23,10 @@ User as users {
     
     static count() : value {
         SELECT COUNT(*) FROM $this
+    }
+    
+    static truncate() : null {
+        DELETE FROM $this
     }
     
     insert() : last_insert_id {

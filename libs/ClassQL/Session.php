@@ -65,15 +65,24 @@ final class Session
             'connection' => null,
             'cache' => null,
             'parser' => null,
-            'generator' => null
+            'generator' => null,
+            'profiler' => null
         ), $options);
         
+        if ($options['connection'] === null) {
+            $options['connection'] = new Connection(
+                $options['dsn'], $options['username'], $options['password']);
+        }
+        
         StreamWrapper::register();
-        self::$_connection = $options['connection'] ?: 
-            new Connection($options['dsn'], $options['username'], $options['password']);
+        self::$_connection = $options['connection'];
         self::$_cache = $options['cache'];
         self::$_parser = $options['parser'] ?: new Parser();
         self::$_generator = $options['generator'] ?: new \ClassQL\Generator\PHPGenerator();
+        
+        if ($options['profiler'] !== null) {
+            self::$_connection->setProfiler($options['profiler']);
+        }
     }
     
     /**

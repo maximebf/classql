@@ -21,8 +21,16 @@ namespace ClassQL\Parser;
 
 use Parsec\CatchAllContext as BaseCatchAllContext;
 
+/**
+ * Context that catches all undefined token
+ */
 class CatchAllContext extends BaseCatchAllContext
 {
+    /**
+     * Throw a syntax error exception
+
+     * @param string $token
+     */
     protected function _syntaxError($token)
     {
         throw new Exception("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");

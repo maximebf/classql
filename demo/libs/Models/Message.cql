@@ -10,14 +10,16 @@ Message as messages {
     user_id integer;
     message text;
 
-    primaryKey = id;
-
     static findAllByUser($id) : self[] {
         SELECT * FROM $this WHERE user_id = $id
     }
     
     static create($user_id, $message) : null {
         INSERT INTO $this (user_id, message) VALUES ($user_id, $message)
+    }
+    
+    static truncate() : null {
+        DELETE FROM $this
     }
     
     insert() : last_insert_id {

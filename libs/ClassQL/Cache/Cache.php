@@ -17,7 +17,7 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Cache;
 
 /**
  * Interface for cache backends

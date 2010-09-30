@@ -27,12 +27,17 @@ class File implements Cache
     /** @var string */
     protected $_cacheDir;
     
+    /** @var bool */
+    protected $_checkTimestamp;
+    
     /**
      * @param string $cacheDir
+     * @param bool $checkTimestamp
      */
-    public function __construct($cacheDir = '/tmp')
+    public function __construct($cacheDir = '/tmp', $checkTimestamp = true)
     {
         $this->setDirectory($cacheDir);
+        $this->setCheckTimestamp($checkTimestamp);
     }
     
     /**
@@ -40,6 +45,12 @@ class File implements Cache
      */
     public function setDirectory($dir)
     {
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        } else if (!is_dir($dir)) {
+            throw new \ClassQL\Exception("Path '$dir' must be a directory");
+        }
+        
         $this->_cacheDir = rtrim($dir, DIRECTORY_SEPARATOR);
     }
     
@@ -52,11 +63,31 @@ class File implements Cache
     }
     
     /**
+     * @param bool $checkTimestamp
+     */
+    public function setCheckTimestamp($checkTimestamp = true)
+    {
+        $this->_checkTimestamp = $checkTimestamp;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function isTimestampChecked()
+    {
+        return $this->_checkTimestamp;
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public function has($filename)
     {
-        return file_exists($this->getCacheName($filename));
+        if (!file_exists($this->getCacheName($filename))) {
+            return false;
+        }
+        return !$this->_checkTimestamp || 
+               filemtime($this->getCacheName($filename)) >= filemtime($filename);
     }
     
     /**
@@ -86,6 +117,6 @@ class File implements Cache
      */
     public function getCacheName($filename)
     {
-        return $this->_cacheDir . DIRECTORY_SEPARATOR . md5(realpath($filename));
+        return $this->_cacheDir . DIRECTORY_SEPARATOR . md5(realpath($filename)) . '.classql.php';
     }
 }

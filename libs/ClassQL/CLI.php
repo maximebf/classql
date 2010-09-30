@@ -27,7 +27,8 @@ class CLI
     /** @var array */
     private static $_commands = array(
         'schema' => '\ClassQL\CLI\Schema',
-        'generate' => '\ClassQL\CLI\Generate'
+        'generate' => '\ClassQL\CLI\Generate',
+        'cache' => '\ClassQL\CLI\Cache'
     );
     
     /**
@@ -63,6 +64,17 @@ class CLI
         $classname = self::$_commands[$command];
         $instance = new $classname();
         return $instance->execute($args, $options);
+    }
+    
+    /**
+     * Registers a command
+     * 
+     * @param string $command
+     * @param string $class
+     */
+    public static function register($command, $class)
+    {
+        self::$_commands[$command] = $class;
     }
     
     /**

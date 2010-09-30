@@ -19,20 +19,28 @@
  
 namespace ClassQL\Generator;
 
+/**
+ * Abstract class for generators
+ */
 abstract class AbstractGenerator implements Generator
 {
     /** @var array */
     protected $_templates = array();
     
     /**
-     * (non-PHPdoc)
-     * @see ClassQL/Generator/ClassQL\Generator.Generator::generate()
+     * {@inheritDoc}
      */
     public function generate(array $descriptor)
     {
         return $this->_generateFile($descriptor);
     }
     
+    /**
+     * Generates a file
+     * 
+     * @param array $descriptor
+     * @return string
+     */
     abstract protected function _generateFile(array $descriptor);
     
     /**

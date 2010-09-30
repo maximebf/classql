@@ -19,12 +19,18 @@
  
 namespace ClassQL\Parser;
 
+/**
+ * Context with support for modifiers and filters
+ */
 class ContainerContext extends Context
 {
+    /** @var array */
     protected $_latestModifiers = array();
     
+    /** @var array */
     protected $_latestFilters = array();
     
+    /** @var array */
     protected $_latestDocComment;
     
     public function tokenStatic($value)
@@ -70,6 +76,9 @@ class ContainerContext extends Context
         $this->_latestDocComment = $this->enterContext('MultilineComment');
     }
     
+    /**
+     * Resets all latest arrays
+     */
     protected function _resetLatests()
     {
         $this->_latestModifiers = array();
