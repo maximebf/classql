@@ -3,7 +3,9 @@
 */
 <?php endif; ?>
 <?php echo $this->_renderModifiers($modifiers); ?>
-class <?php echo $name; if (!empty($extends)) echo "extends $extends"; ?> {
+class <?php echo $name; 
+    if (!empty($extends)) echo " extends $extends"; 
+    if (!empty($interfaces)) echo ' implements ' . implode(', ', $interfaces); ?> {
 
 <?php if (!in_array('virtual', $modifiers)): ?>
     /** 
