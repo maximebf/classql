@@ -165,4 +165,9 @@ class StreamWrapper
     {
         return stat($this->_filename);
     }
+    
+    public function url_stat()
+    {
+        return stat($this->_filename);
+    }
 }
