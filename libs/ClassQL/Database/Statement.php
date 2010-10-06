@@ -41,7 +41,7 @@ class Statement extends PDOStatement
     /**
      * {@inheritDoc}
      */
-    public function execute(array $params = array())
+    public function execute($params = array())
     {
         $this->_profiler !== null && $this->_profiler->startQuery($this->queryString, $params);
     

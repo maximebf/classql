@@ -69,7 +69,7 @@ final class Session
             'profiler' => null
         ), $options);
         
-        if ($options['connection'] === null) {
+        if ($options['connection'] === null && $options['dsn'] !== null) {
             $options['connection'] = new Connection(
                 $options['dsn'], $options['username'], $options['password']);
         }
