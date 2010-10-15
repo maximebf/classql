@@ -23,7 +23,7 @@ Message as messages {
     }
     
     insert() : last_insert_id {
-        INSERT INTO $this (user_id, message) VALUES ($user_id, $message)
+        @create($user_id, $message) { otot }
     }
     
     update() : null {

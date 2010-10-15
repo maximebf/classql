@@ -58,18 +58,17 @@ class StreamWrapper
             return false;
         }
         
-        $cache = Session::getCache();
-        if ($cache !== null && ($this->_content = $cache->get($filename)) !== false) {
+        if (StreamCache::isEnabled() && ($this->_content = StreamCache::get($filename)) !== false) {
             return true;
         }
         
         $parser = Session::getParser();
         $generator = Session::getGenerator();
-        $descriptor = $parser->parseFile($filename);
-        $this->_content = $generator->generate($descriptor);
+        $ast = $parser->parseFile($filename);
+        $this->_content = $generator->generate($ast);
         
-        if ($cache !== null) {
-            $cache->set($filename, $this->_content);
+        if (StreamCache::isEnabled()) {
+            StreamCache::set($filename, $this->_content);
         }
         
         return true;

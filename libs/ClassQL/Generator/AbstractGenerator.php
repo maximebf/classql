@@ -30,18 +30,18 @@ abstract class AbstractGenerator implements Generator
     /**
      * {@inheritDoc}
      */
-    public function generate(array $descriptor)
+    public function generate(array $ast)
     {
-        return $this->_generateFile($descriptor);
+        return $this->_generateFile($ast);
     }
     
     /**
      * Generates a file
      * 
-     * @param array $descriptor
+     * @param array $ast
      * @return string
      */
-    abstract protected function _generateFile(array $descriptor);
+    abstract protected function _generateFile(array $ast);
     
     /**
      * Renders a template

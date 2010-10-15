@@ -28,7 +28,7 @@ class CLI
     private static $_commands = array(
         'schema' => '\ClassQL\CLI\Schema',
         'generate' => '\ClassQL\CLI\Generate',
-        'cache' => '\ClassQL\CLI\Cache'
+        'streamcache' => '\ClassQL\CLI\StreamCache'
     );
     
     /**

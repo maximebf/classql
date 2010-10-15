@@ -25,26 +25,26 @@ namespace ClassQL\Cache;
 interface Cache
 {
     /**
-     * Checks if a file is already cached
+     * Checks if a key is already cached
      * 
-     * @param string $filename
+     * @param string $key
      * @return bool
      */
-    public function has($filename);
+    public function has($key);
     
     /**
-     * Returns the content of a cached file
+     * Returns cached content
      * 
-     * @param string $filename
+     * @param string $key
      * @return string
      */
-    public function get($filename);
+    public function get($key);
     
     /**
-     * Caches a file
+     * Adds content to the cache
      * 
-     * @param string $filename
+     * @param string $key
      * @param string $content
      */
-    public function set($filename, $content);
+    public function set($key, $content);
 }

@@ -59,35 +59,24 @@ class Memcache implements Cache
     /**
      * {@inheritDoc}
      */
-    public function has($filename)
+    public function has($key)
     {
-        return $this->_memcache->get($this->getKey($filename)) !== false;
+        return $this->_memcache->get($key) !== false;
     }
     
     /**
      * {@inheritDoc}
      */
-    public function get($filename)
+    public function get($key)
     {
-        return $this->_memcache->get($this->getKey($filename));
+        return $this->_memcache->get($key);
     }
     
     /**
      * {@inheritDoc}
      */
-    public function set($filename, $content)
+    public function set($key, $content)
     {
-        return $this->_memcache->set($this->getKey($filename), $filename);
-    }
-    
-    /**
-     * Returns the cache key associated to a filename
-     * 
-     * @param string $filename
-     * @return string
-     */
-    public function getKey($filename)
-    {
-        return md5(realpath($filename));
+        return $this->_memcache->set($key, $filename);
     }
 }

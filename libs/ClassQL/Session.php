@@ -51,6 +51,7 @@ final class Session
      *  cache: a Cache instance
      *  parser: a Parser instance
      *  generator: a Generator instance
+     *  streamcache: the path where to cache generated files (false to disabled)
      *  
      * All keys are optional apart for either the connection or the dsn ones
      * 
@@ -66,7 +67,8 @@ final class Session
             'cache' => null,
             'parser' => null,
             'generator' => null,
-            'profiler' => null
+            'profiler' => null,
+            'streamcache' => false
         ), $options);
         
         if ($options['connection'] === null && $options['dsn'] !== null) {
@@ -74,7 +76,12 @@ final class Session
                 $options['dsn'], $options['username'], $options['password']);
         }
         
+        if ($options['streamcache'] !== false) {
+            StreamCache::setEnabled();
+            StreamCache::setDirectory($options['streamcache']);
+        }
         StreamWrapper::register();
+        
         self::$_connection = $options['connection'];
         self::$_cache = $options['cache'];
         self::$_parser = $options['parser'] ?: new Parser();
@@ -115,6 +122,26 @@ final class Session
     public static function getGenerator()
     {
         return self::$_generator;
+    }
+    
+    public static function beginTransaction()
+    {
+        return self::$_connection->beginTransaction();
+    }
+    
+    public static function commitTransaction()
+    {
+        return self::$_connection->commit();
+    }
+    
+    public static function rollbackTransaction()
+    {
+        return self::$_connection->rollBack();
+    }
+    
+    public static function query($query, $params = array())
+    {
+        
     }
 }
 

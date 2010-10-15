@@ -26,24 +26,30 @@ use ClassQL\CLI,
 
 class Generate extends CLI
 {
+    public function executeAst($args)
+    {
+        $ast = Session::getParser()->parseFile($args[0]);
+        var_dump($ast);
+    }
+    
     public function executePhp($args)
     {
-        $descriptor = Session::getParser()->parseFile($args[0]);
+        $ast = Session::getParser()->parseFile($args[0]);
         $generator = new PHPGenerator();
-        $this->println($generator->generate($descriptor));
+        $this->println($generator->generate($ast));
     }
     
     public function executeSqlCreate($args)
     {
-        $descriptor = Session::getParser()->parseFile($args[0]);
+        $ast = Session::getParser()->parseFile($args[0]);
         $generator = new SQLGenerator();
-        $this->println($generator->generate($descriptor));
+        $this->println($generator->generate($ast));
     }
     
     public function executeSqlDrop($args)
     {
-        $descriptor = Session::getParser()->parseFile($args[0]);
+        $ast = Session::getParser()->parseFile($args[0]);
         $generator = new SQLGenerator();
-        $this->println($generator->generateDrop($descriptor));
+        $this->println($generator->generateDrop($ast));
     }
 }

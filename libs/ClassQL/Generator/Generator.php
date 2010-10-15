@@ -24,5 +24,5 @@ namespace ClassQL\Generator;
  */
 interface Generator
 {
-    public function generate(array $descriptor);
+    public function generate(array $ast);
 }

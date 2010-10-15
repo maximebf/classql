@@ -38,21 +38,21 @@ class SQLGenerator extends AbstractGenerator
     /**
      * Generates DROP TABLE statements
      * 
-     * @param array $descriptor
+     * @param array $ast
      * @return string
      */
-    public function generateDrop($descriptor)
+    public function generateDrop($ast)
     {
-        return $this->_generateFile($descriptor, 'drop');
+        return $this->_generateFile($ast, 'drop');
     }
     
     /**
      * {@inheritDoc}
      */
-    public function _generateFile(array $descriptor, $template = 'create')
+    public function _generateFile(array $ast, $template = 'create')
     {
         $sql = '';
-        foreach ($descriptor['objects'] as $object) {
+        foreach ($ast['objects'] as $object) {
             if ($object['type'] == 'class') {
                 $sql .= $this->_generateTable($object, $template);
             }
@@ -63,11 +63,11 @@ class SQLGenerator extends AbstractGenerator
     /**
      * Generates sql code for a table
      * 
-     * @param array $descriptor
+     * @param array $ast
      * @param string $template
      */
-    protected function _generateTable($descriptor, $template = 'create')
+    protected function _generateTable($ast, $template = 'create')
     {
-        return $this->_renderTemplate($template, $descriptor);
+        return $this->_renderTemplate($template, $ast);
     }
 }

@@ -48,16 +48,6 @@ class Context extends BaseContext
      */
     public function __call($method, $args)
     {
-        $this->_syntaxError(lcfirst(substr($method, 5)));
-    }
-    
-    /**
-     * Throw a syntax error exception
-
-     * @param string $token
-     */
-    protected function _syntaxError($token)
-    {
-        throw new Exception("Syntax error, unexpected token '$token' in context '" . get_class($this) . "'");
+        $this->_syntaxError();
     }
 }

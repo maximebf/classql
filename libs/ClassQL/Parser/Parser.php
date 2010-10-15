@@ -41,22 +41,26 @@ class Parser extends StringParser
     /**
      * Parses a ClassQL string and returns a computed descriptor
      * 
+     * @param string $string
+     * @param string $filename
      * @return array
      */
-    public function parse($string)
+    public function parse($string, $filename = null)
     {
-        $descriptor = $this->parseRaw($string);
-        return $this->_compute($descriptor);
+        $ast = $this->getAST($string, $filename);
+        return $this->_compute($ast);
     }
     
     /**
      * Returns the raw descriptor from the parser
      * 
+     * @param string $string
+     * @param string $filename
      * @return array
      */
-    public function parseRaw($string)
+    public function getAST($string, $filename = null)
     {
-        return parent::parse($string, 'File');
+        return parent::parse($string, 'File', array(), $filename);
     }
     
     /**
@@ -67,18 +71,18 @@ class Parser extends StringParser
      */
     public function parseFile($filename)
     {
-        return $this->parse(file_get_contents($filename));
+        return $this->parse(file_get_contents($filename), $filename);
     }
     
     /**
      * Computes a raw descriptor
      * 
-     * @param array $descriptor
+     * @param array $ast
      * @return array
      */
-    protected function _compute($descriptor)
+    protected function _compute($ast)
     {
-        foreach ($descriptor['objects'] as &$object) {
+        foreach ($ast['objects'] as &$object) {
             if ($object['type'] == 'class') {
                 $object = $this->_computeModel($object);
             } else {
@@ -86,7 +90,7 @@ class Parser extends StringParser
             }
         }
         
-        return $descriptor;
+        return $ast;
     }
     
     /**

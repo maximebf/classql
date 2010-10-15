@@ -56,7 +56,7 @@ class File extends ContainerContext
                 'name' => $value,
                 'namespace' => $this->_namespace,
                 'modifiers' => $this->_latestModifiers,
-                'filters' => $this->_latestFilters,
+                'attributes' => $this->_latestAttributes,
                 'docComment' => $this->_latestDocComment
             )
         );

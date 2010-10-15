@@ -29,11 +29,39 @@ class Block extends CatchAllContext
     /** @var array */
     protected $_vars = array();
     
+    /** @var array */
+    protected $_functions = array();
+    
     public function tokenVariable($value)
     {
         // catches variables from the sql string
         $this->_vars[] = $value;
         $this->_value .= $value;
+    }
+    
+    public function tokenAttribute($value)
+    {
+        $args = array();
+        if ($this->getParser()->isNextToken('parenthOpen')) {
+            $this->getParser()->skipNext();
+            $args = $this->enterContext('Arguments');
+        }
+        
+        $block = null;
+        if ($this->getParser()->isNextToken('curlyOpen', array('whitespace'))) {
+            $this->getParser()->skipUntil('parenthOpen')->skipNext();
+            $block = $this->enterContext('Block');
+        }
+        
+        $variable = '$deco' . uniqid();
+        $this->_value .= $variable;
+        
+        $this->_functions[$variable] = array(
+            'name' => substr($value, 1),
+            'variable' => $variable,
+            'args' => $args,
+            'block' => $block
+        );
     }
     
     public function tokenCurlyOpen()
@@ -52,7 +80,8 @@ class Block extends CatchAllContext
         
         $this->exitContext(array(
             'sql' => trim($this->_value),
-            'vars' => $this->_vars
+            'vars' => $this->_vars,
+            'functions' => $this->_functions
         ));
     }
 }

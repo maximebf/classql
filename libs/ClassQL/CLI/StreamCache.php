@@ -17,21 +17,26 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Parser\Contexts;
+namespace ClassQL\CLI;
 
-use ClassQL\Parser\Context;
+use ClassQL\CLI,
+    ClassQL\StreamCache,
+    \DirectoryIterator;
 
-class Filter extends Context
+class StreamCache extends CLI
 {
-    protected $_args = array();
-    
-    public function tokenParenthOpen()
+    public function executeClear($args)
     {
-        $this->_args = $this->enterContext('Arguments');
-    }
-    
-    public function tokenEol()
-    {
-        $this->exitContext($this->_args);
+        if (!StreamCache::isEnabled()) {
+            $this->println('ERROR: No cache used');
+        }
+        
+        $dir = StreamCache::getDirectory();
+        foreach (new DirectoryIterator($dir) as $file) {
+            if (!$file->isFile() || substr($file->getFilename(), 0, 1) === '.') {
+                continue;
+            }
+            unlink($file->getPathname());
+        }
     }
 }

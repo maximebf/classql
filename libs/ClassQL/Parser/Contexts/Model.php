@@ -19,7 +19,8 @@
  
 namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Parser\ContainerContext;
+use ClassQL\Parser\ContainerContext,
+    ClassQL\Parser\Exception;
 
 class Model extends ContainerContext
 {
@@ -60,23 +61,22 @@ class Model extends ContainerContext
         $this->_resetLatests();
     }
     
-    public function tokenEqual()
+    public function tokenVariable($value)
     {
-        if ($this->_nextName === null) {
-            $this->_syntaxError('curlyOpen');
-        }
-        // equal after a string means a variable
-        
-        if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
-            throw new Exception("Cannot redeclare '$this->_nextName'");
+        if (isset($this->_columns[substr($value, 1)]) || isset($this->_vars[$value])) {
+            throw new Exception("Cannot redeclare '$value'");
         }
         
-        $this->_vars['$' . $this->_nextName] = array_merge(
+        if (!$this->getParser()->isNextToken('equal', array('whitespace'))) {
+            $this->_syntaxError();
+        }
+        
+        $this->getParser()->skipUntil('equal')->skipNext();
+        
+        $this->_vars[$value] = array_merge(
             $this->enterContext('Variable'),
-            array('name' => '$' . $this->_nextName)
+            array('name' => $value)
         );
-        
-        $this->_nextName = null;
     }
     
     public function tokenParenthOpen()
@@ -105,7 +105,7 @@ class Model extends ContainerContext
                 'name' => $this->_nextName,
                 'params' => $params,
                 'modifiers' => $modifiers,
-                'filters' => $this->_latestFilters,
+                'attributes' => $this->_latestAttributes,
                 'docComment' => $this->_latestDocComment
             )
         );
@@ -121,5 +121,11 @@ class Model extends ContainerContext
             'vars' => $this->_vars,
             'methods' => $this->_methods
         ));
+    }
+    
+    public function _resetLatests()
+    {
+        parent::_resetLatests();
+        $this->_lastAttribute = null;
     }
 }

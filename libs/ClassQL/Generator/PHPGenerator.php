@@ -36,12 +36,12 @@ class PHPGenerator extends AbstractGenerator
     /**
      * Generates a PHP file from the output of the parser
      * 
-     * @param array $descriptor
+     * @param array $ast
      * @return string
      */
-    protected function _generateFile(array $descriptor)
+    protected function _generateFile(array $ast)
     {
-        foreach ($descriptor['objects'] as &$object) {
+        foreach ($ast['objects'] as &$object) {
             if ($object['type'] == 'function') {
                 $object = $this->_generateFunction($object);
             } else {
@@ -49,7 +49,7 @@ class PHPGenerator extends AbstractGenerator
             }
         }
         
-        return $this->_renderTemplate('file', $descriptor);
+        return $this->_renderTemplate('file', $ast);
     }
     
     /**

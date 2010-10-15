@@ -32,7 +32,7 @@ class Variable extends CatchAllContext
     public function tokenArrayOpen()
     {
         if (trim($this->_value) != '') {
-            $this->_syntaxError('arrayOpen');
+            return;
         }
         
         $this->_array = array(

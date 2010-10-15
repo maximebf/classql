@@ -55,8 +55,8 @@ class Schema extends CLI
             return;
         }
         
-        $descriptor = Session::getParser()->parseFile($filename);
+        $ast = Session::getParser()->parseFile($filename);
         $generator = new SQLGenerator();
-        Session::getConnection()->exec($generator->$method($descriptor));
+        Session::getConnection()->exec($generator->$method($ast));
     }
 }

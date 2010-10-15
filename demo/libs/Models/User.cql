@@ -10,8 +10,8 @@ User as users {
     lastName text;
     created timestamp;
     
-    fullName = firstName || ' ' || lastName as fullName;
-    SELECT = SELECT id, email, firstName, lastName, $fullName;
+    $fullName = firstName || ' ' || lastName as fullName;
+    $SELECT = SELECT id, email, firstName, lastName, $fullName;
     
     static findAll() : self[] {
         $SELECT FROM $this

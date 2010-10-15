@@ -20,7 +20,7 @@
 namespace ClassQL\Parser;
 
 /**
- * Context with support for modifiers and filters
+ * Context with support for modifiers and attributes
  */
 class ContainerContext extends Context
 {
@@ -28,46 +28,27 @@ class ContainerContext extends Context
     protected $_latestModifiers = array();
     
     /** @var array */
-    protected $_latestFilters = array();
+    protected $_latestAttributes = array();
     
     /** @var array */
     protected $_latestDocComment;
     
-    public function tokenStatic($value)
+    public function tokenModifier($value)
     {
         $this->_latestModifiers[] = $value;
     }
     
-    public function tokenAbstract($value)
+    public function tokenAttribute($value)
     {
-        $this->_latestModifiers[] = $value;
-    }
-    
-    public function tokenPublic($value)
-    {
-        $this->_latestModifiers[] = $value;
-    }
-    
-    public function tokenPrivate($value)
-    {
-        $this->_latestModifiers[] = $value;
-    }
-    
-    public function tokenProtected($value)
-    {
-        $this->_latestModifiers[] = $value;
-    }
-    
-    public function tokenVirtual($value)
-    {
-        $this->_latestModifiers[] = $value;
-    }
-    
-    public function tokenFilter($value)
-    {
-        $this->_latestFilters[] = array(
+        $args = array();
+        if ($this->getParser()->isNextToken('parenthOpen', array('whitespace'))) {
+            $this->getParser()->skipUntil('parenthOpen')->skipNext();
+            $args = $this->enterContext('Arguments');
+        }
+        
+        $this->_latestAttributes[] = array(
             'name' => substr($value, 1),
-            'args' => $this->enterContext('Filter')
+            'args' => $args
         );
     }
     
@@ -82,7 +63,7 @@ class ContainerContext extends Context
     protected function _resetLatests()
     {
         $this->_latestModifiers = array();
-        $this->_latestFilters = array();
+        $this->_latestAttributes = array();
         $this->_latestDocComment = null;
     }
 }
