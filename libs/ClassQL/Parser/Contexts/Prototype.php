@@ -45,6 +45,11 @@ class Prototype extends Context
         $this->_nextStringType = 'implements';
     }
     
+    public function tokenReturns()
+    {
+        $this->_nextStringType = 'returns';
+    }
+    
     public function tokenString($value)
     {
         $key = $this->_nextStringType;

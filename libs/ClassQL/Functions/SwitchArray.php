@@ -17,28 +17,15 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Functions;
 
-use FilterIterator,
-    Iterator;
-
-/**
- * Abstract class to create filters
- * 
- * @see FilterIterator
- */
-abstract class Filter extends FilterIterator
+class SwitchArray
 {
-    /** @var array */
-    protected $_args;
-    
-    /**
-     * @param Iterator $iterator
-     * @param array $args
-     */
-    public function __construct(Iterator $iterator, array $args = array())
+    public static function call($value, $array, $default = null)
     {
-        parent::__construct($iterator);
-        $this->_args = $args;
+        if (isset($array[$value])) {
+            return $array['value'];
+        }
+        return $default;
     }
 }

@@ -22,38 +22,39 @@ namespace ClassQL\Cache;
 /**
  * Memcache backend
  */
-class Memcache implements Cache
+class File implements Cache
 {
-    /** @var \Memcache */
-    protected $_memcache;
+    /** @var string */
+    protected $_directory;
     
     /**
-     * @param \Memcache|string $memcache Memcache object or host name
-     * @param int $port
+     * @param string $dir
      */
-    public function __construct($memcache = null, $port = 11211)
+    public function __construct($dir = '/tmp')
     {
-        if ($memcache instanceof \Memcache) {
-            $this->_memcache = $memcache;
-        } else if ($memcache !== null) {
-            $this->_memcache = new \Memcache($memcache, $port);
+        $this->setDirectory($dir);
+    }
+    
+    /**
+     * @param string $dir
+     */
+    public function setDirectory($dir)
+    {
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        } else if (!is_dir($dir)) {
+            throw new \ClassQL\Exception("Path '$dir' must be a directory");
         }
+        
+        $this->_directory = rtrim($dir, DIRECTORY_SEPARATOR);
     }
     
     /**
-     * @param \Memcache $memcache
+     * @return string
      */
-    public function setMemcache(\Memcache $memcache)
+    public function getDirectory()
     {
-        $this->_memcache = $memcache;
-    }
-    
-    /**
-     * @return \Memcache
-     */
-    public function getMemcache()
-    {
-        return $this->_memcache;
+        return $this->_directory;
     }
     
     /**
@@ -61,7 +62,7 @@ class Memcache implements Cache
      */
     public function has($key)
     {
-        return $this->_memcache->get($key) !== false;
+        return file_exists($this->getFilename($key));
     }
     
     /**
@@ -69,7 +70,7 @@ class Memcache implements Cache
      */
     public function get($key)
     {
-        return $this->_memcache->get($key);
+        return unserialize(file_get_contents($this->getFilename($key)));
     }
     
     /**
@@ -77,7 +78,7 @@ class Memcache implements Cache
      */
     public function set($key, $content)
     {
-        return $this->_memcache->set($key, $filename);
+        file_put_contents($this->getFilename($key), serialize($content));
     }
     
     /**
@@ -85,6 +86,19 @@ class Memcache implements Cache
      */
     public function delete($key)
     {
-        $this->_memcache->delete($key);
+        if ($this->has($key)) {
+            unlink($this->getFilename($key));
+        }
+    }
+    
+    /**
+     * Returns the filename associated to a key
+     * 
+     * @param string $key
+     * @return string
+     */
+    public function getFilename($key)
+    {
+        return $this->_directory . DIRECTORY_SEPARATOR . $key;
     }
 }

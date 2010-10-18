@@ -4,7 +4,7 @@ namespace Demo\Models;
 /**
  * Represents a message sent by the user
  */
-Message as messages {
+Message represents messages returns \Demo\Message {
 
     id integer primary key autoincrement;
     user_id integer;
@@ -22,8 +22,8 @@ Message as messages {
         DELETE FROM $this
     }
     
-    insert() : last_insert_id {
-        @create($user_id, $message) { otot }
+    insert($toto) : last_insert_id {
+        @create($user_id, $message)
     }
     
     update() : null {

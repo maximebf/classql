@@ -42,7 +42,7 @@ class <?php echo $name;
 <?php endforeach; ?>
 
 <?php foreach ($methods as $method): ?>
-    <?php echo $method; ?>
+    <?php echo $method['php']; ?>
     
 <?php endforeach; ?>
 }

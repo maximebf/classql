@@ -47,20 +47,22 @@ class Block extends CatchAllContext
             $args = $this->enterContext('Arguments');
         }
         
-        $block = null;
         if ($this->getParser()->isNextToken('curlyOpen', array('whitespace'))) {
-            $this->getParser()->skipUntil('parenthOpen')->skipNext();
-            $block = $this->enterContext('Block');
+            $this->getParser()->skipUntil('curlyOpen')->skipNext();
+            $args[] = array(
+                'type' => 'sql',
+                'value' => $this->enterContext('Block')
+            );
         }
         
         $variable = '$deco' . uniqid();
+        $this->_vars[] = $variable;
         $this->_value .= $variable;
         
         $this->_functions[$variable] = array(
             'name' => substr($value, 1),
             'variable' => $variable,
-            'args' => $args,
-            'block' => $block
+            'args' => $args
         );
     }
     

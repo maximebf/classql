@@ -17,24 +17,15 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Parser\Contexts;
+namespace ClassQL\Functions;
 
-use ClassQL\Parser\Context;
-
-class Operation extends Context
+class Test
 {
-    public function tokenOpreturns()
+    public static function call($expression, $true, $false = array('', array()))
     {
-        $this->exitContext(array('query' => $this->enterContext('Returns')));
-    }
-    
-    public function tokenCurlyOpen()
-    {
-        $this->exitContext(array('query' => $this->enterContext('Block')));
-    }
-    
-    public function tokenPointer()
-    {
-        $this->exitContext(array('callback' => $this->enterContext('Callback')));
+        if ($expression) {
+            return $true;
+        }
+        return $false;
     }
 }

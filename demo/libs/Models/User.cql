@@ -1,7 +1,7 @@
 
 namespace Demo\Models;
 
-User as users {
+User represents users returns \Demo\User {
     
     id integer primary key autoincrement;
     email text;

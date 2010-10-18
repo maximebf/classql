@@ -36,7 +36,7 @@ class Parameters extends Context
     {
         if (!empty($this->_paramName)) {
             // only one variable possible
-            $this->_syntaxError('variable');
+            $this->_syntaxError();
         }
         
         $this->_paramName = $value;
@@ -51,7 +51,7 @@ class Parameters extends Context
     public function tokenValue($value)
     {
         if (!$this->_hasDefaultValue) {
-            $this->_syntaxError('value');
+            $this->_syntaxError();
         }
         $this->_paramValue .= " = $value";
     }
@@ -59,7 +59,7 @@ class Parameters extends Context
     public function tokenString($value)
     {
         if (!$this->_hasDefaultValue) {
-            $this->_syntaxError('string');
+            $this->_syntaxError();
         }
         $this->_paramValue .= " = $value";
     }

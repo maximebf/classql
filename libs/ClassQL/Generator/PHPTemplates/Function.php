@@ -8,6 +8,11 @@
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php if (isset($query)): ?>
+<?php if ($cached): ?>
+    if (\ClassQL\Session::getCache()->has('<?php echo $cacheid ?>')) {
+        return \ClassQL\Session::getCache()->get('<?php echo $cacheid ?>');
+    }
+<?php endif; ?>
     $stmt = <?php echo $this->_renderScope($type, $modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 <?php if ($query['returns']['type'] != 'null'): ?>
 <?php if ($query['returns']['type'] == 'collection'): ?>
@@ -15,6 +20,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php elseif ($query['returns']['type'] == 'class'): ?>
     $stmt->setFetchMode(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
     $data = $stmt->fetch();
+    $stmt->closeCursor();
 <?php elseif ($query['returns']['type'] == 'value'): ?>
     $data = $stmt->fetchColumn();
 <?php elseif ($query['returns']['type'] == 'last_insert_id'): ?>
@@ -25,18 +31,17 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
             $this->{$key} = $value;
         }
     }
-<?php endif; ?>
     $stmt->closeCursor();
+<?php endif; ?>
 <?php endif; ?>
 <?php else: ?>
     $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
 <?php endif; ?>
 <?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'class', 'collection'))):?>
-<?php if (!empty($filters)): ?>
-    return <?php echo $this->_renderScope($type, $modifiers) . $filter_func_name; ?>(new ArratIterator($data));
-<?php else: ?>
-    return $data;
+<?php if ($cached): ?>
+    \ClassQL\Session::getCache()->set('<?php echo $cacheid ?>', $data);
 <?php endif; ?>
+    return $data;
 <?php endif; ?>
 }
 <?php if (isset($query)): ?>
@@ -47,43 +52,25 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
  */
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>) {
-    $stmt = <?php echo $this->_renderScope($type, $modifiers) . $statement_func_name ?>();
-    $params = array(<?php echo $this->_renderQueryParams($query['vars'], array_keys($params)) ?>);
+    list($sql, $params) = <?php echo $this->_renderScope($type, $modifiers) . $query_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
+    $stmt = \ClassQL\Session::getConnection()->prepare($sql);
     $stmt->execute($params);
     return $stmt;
 }
 
 /**
- * Creates the statement associated to {@see <?php echo $name ?>()} 
- * @return PDOStatement
+ * Generates the query associated to {@see <?php echo $name ?>()} 
+ * @return array (sql, params)
  */
 <?php echo $this->_renderModifiers($modifiers); ?>
-function <?php echo $statement_func_name; ?>() {
-    $query = '<?php echo $this->_renderQuery($query); ?>';
-    return \ClassQL\Session::getConnection()->prepare($query);
-}
-<?php endif; ?>
-<?php if (!empty($filters)): ?>
-
-/**
- * Filters the fetched data for {@see <?php echo $name ?>()} 
- * @return array
- */
-<?php echo $this->_renderModifiers($modifiers); ?>
-function <?php echo $filter_func_name; ?>($data) {
-    $filters = array(
-<?php foreach ($filters as $filter): ?>
-        '<?php echo $filter['name'] ?>' => array(<?php echo $this->_renderArgs($filter['args']) ?>),
+function <?php echo $query_func_name; ?>(<?php echo implode(', ', $params); ?>) {
+<?php foreach ($query['functions'] as $func): ?>
+    list(<?php echo $func['variable'] ?>_sql, <?php echo $func['variable'] ?>_params) = 
+        <?php echo $this->_getInlineFuncName($func['name'], $class) ?>(<?php 
+        echo $this->_renderArgs($func['args'], array_keys($params)) ?>);
 <?php endforeach; ?>
-    );
-    
-    foreach ($filters as $className => $args) {
-        if (!is_subclass_of($className, '\ClassQL\Filter')) {
-            throw new \ClassQL\Exception("Filter '$className' must subclass '\ClassQL\Filter'");
-        }
-        $data = new $className($data, $args);
-    }
-    
-    return $data;
+    $sql = "<?php echo $this->_renderQuery($query); ?>";
+    $params = <?php echo $this->_renderQueryParams($query, array_keys($params)) ?>;
+    return array($sql, $params);
 }
 <?php endif; ?>

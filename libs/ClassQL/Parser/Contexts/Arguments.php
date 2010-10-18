@@ -30,7 +30,7 @@ class Arguments extends Context
     {
         if (!empty($this->_arg)) {
             // only one token possible
-            $this->_syntaxError('value');
+            $this->_syntaxError();
         }
         
         $this->_arg = array(
@@ -43,7 +43,7 @@ class Arguments extends Context
     {
         if (!empty($this->_arg)) {
             // only one token possible
-            $this->_syntaxError('string');
+            $this->_syntaxError();
         }
         
         $this->_arg = array(
@@ -56,7 +56,7 @@ class Arguments extends Context
     {
         if (!empty($this->_arg)) {
             // only one token possible
-            $this->_syntaxError('variable');
+            $this->_syntaxError();
         }
         
         $this->_arg = array(
@@ -65,11 +65,37 @@ class Arguments extends Context
         );
     }
     
+    public function tokenBoolean($value)
+    {
+        if (!empty($this->_arg)) {
+            // only one token possible
+            $this->_syntaxError();
+        }
+        
+        $this->_arg = array(
+            'type' => 'boolean', 
+            'value' => $value
+        );
+    }
+    
+    public function tokenCurlyOpen()
+    {
+        if (!empty($this->_arg)) {
+            // only one token possible
+            $this->_syntaxError();
+        }
+        
+        $this->_arg = array(
+            'type' => 'sql', 
+            'value' => $this->enterContext('Block')
+        );
+    }
+    
     public function tokenArrayOpen()
     {
         if (!empty($this->_arg)) {
             // only one token possible
-            $this->_syntaxError('arrayOpen');
+            $this->_syntaxError();
         }
         
         $this->_arg = array(

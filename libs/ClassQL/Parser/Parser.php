@@ -104,7 +104,8 @@ class Parser extends StringParser
         $model = array_merge(array(
             'table' => $model['name'],
             'extends' => null,
-            'implements' => array()
+            'implements' => array(),
+            'returns' => '\\' . $model['namespace'] . '\\' . $model['name']
         ), $model);
         
         foreach ($model['vars'] as &$var) {
@@ -124,8 +125,7 @@ class Parser extends StringParser
                         'value' => 'self'
                     );
                 }
-                $method['query']['returns'] = $this->_computeReturns($method['query']['returns'],
-                    '\\' . $model['namespace'] . '\\' . $model['name']);
+                $method['query']['returns'] = $this->_computeReturns($method['query']['returns'], $model['returns']);
                 
                 if (isset($method['query'])) {
                     $method['query'] = $this->_replaceVars($method['query'], $model['vars']);
@@ -192,7 +192,7 @@ class Parser extends StringParser
     protected function _replaceVars($query, $vars)
     {
         $sql = $query['sql'];
-        $queryVars = array_flip($query['vars']);
+        $queryVars = $query['vars'];
         
         foreach ($query['vars'] as $var) {
             $varname = $var;
@@ -202,10 +202,20 @@ class Parser extends StringParser
             
             if (isset($vars[$varname])) {
                 $sql = str_replace($var, $vars[$varname]['value'], $sql);
-                unset($queryVars[$var]);
+                unset($queryVars[array_search($var, $queryVars)]);
             }
         }
         
-        return array_merge($query, array('sql' => $sql, 'vars' => array_flip($queryVars)));
+        if (isset($query['functions'])) {
+            foreach ($query['functions'] as &$func) {
+                foreach ($func['args'] as &$arg) {
+                    if ($arg['type'] == 'sql') {
+                        $arg['value'] = $this->_replaceVars($arg['value'], $vars);
+                    }
+                }
+            }
+        }
+        
+        return array_merge($query, array('sql' => $sql, 'vars' => $queryVars));
     }
 }

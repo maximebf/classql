@@ -8,6 +8,7 @@ ClassQL\Loader::register('Demo', __DIR__ . '/libs');
 
 ClassQL\Session::start(array(
     'dsn' => 'sqlite:./demo.db',
-    'streamcache' => __DIR__ . '/cache',
+    'streamcache' => __DIR__ . '/cache/cql',
+    'cache' => new ClassQL\Cache\File(__DIR__ . '/cache/db'),
     'profiler' => new ClassQL\Database\FileProfiler('queries.log')
 ));
