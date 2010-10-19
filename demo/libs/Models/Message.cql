@@ -11,7 +11,11 @@ Message represents messages returns \Demo\Message {
     message text;
     
     static findAllByUser($id) : self[] {
-        SELECT * FROM $this WHERE user_id = $id
+        SELECT * FROM $this WHERE user_id = $id @build($filters)
+    }
+    
+    static build($filters) {
+        @if($filters[toto]) { AND toto = $filters[toto] }
     }
     
     static create($user_id, $message) : null {

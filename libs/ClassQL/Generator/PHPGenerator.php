@@ -168,8 +168,12 @@ class PHPGenerator extends AbstractGenerator
      */
     protected function _getRenderedArgsItem($item, $varsInScope = array())
     {
-        if ($item['type'] == 'variable' && !in_array($item['value'], $varsInScope)) {
-            return '$this->' . substr($item['value'], 1);
+        if ($item['type'] == 'variable') {
+            $varname = str_replace(array('[', ']'), array("['", "']"), $item['value']);
+            if (!in_array($this->_getCanonicalVarName($item['value']), $varsInScope)) {
+                return '$this->' . substr($varname, 1);
+            }
+            return $varname;
         }
         if ($item['type'] == 'array') {
             return $this->_renderArray($item['value']);

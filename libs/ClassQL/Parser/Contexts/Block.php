@@ -55,7 +55,7 @@ class Block extends CatchAllContext
             );
         }
         
-        $variable = '$deco' . uniqid();
+        $variable = '$func' . uniqid();
         $this->_vars[] = $variable;
         $this->_value .= $variable;
         
