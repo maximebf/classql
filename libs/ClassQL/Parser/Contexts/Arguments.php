@@ -35,7 +35,7 @@ class Arguments extends Context
         
         $this->_arg = array(
             'type' => 'scalar', 
-            'value' => str_replace('\\"', '"', trim($value, '"'))
+            'value' => $value
         );
     }
     

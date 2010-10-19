@@ -9,7 +9,7 @@ Message represents messages returns \Demo\Message {
     id integer primary key autoincrement;
     user_id integer;
     message text;
-
+    
     static findAllByUser($id) : self[] {
         SELECT * FROM $this WHERE user_id = $id
     }
