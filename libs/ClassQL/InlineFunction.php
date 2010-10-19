@@ -17,15 +17,18 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Functions;
+namespace ClassQL;
 
-class Test
+class InlineFunction
 {
-    public static function call($expression, $true, $false = null)
+    public static function formatReturn($data)
     {
-        if ($expression) {
-            return InlineFunction::formatReturn($true);
+        if (empty($data)) {
+            return array('', array());
         }
-        return InlineFunction::formatReturn($false);
+        if (is_array($data)) {
+            return $data;
+        }
+        return array($data, array());
     }
 }

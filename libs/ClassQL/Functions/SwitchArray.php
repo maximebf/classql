@@ -19,13 +19,15 @@
  
 namespace ClassQL\Functions;
 
+use ClassQL\InlineFunction;
+
 class SwitchArray
 {
     public static function call($value, $array, $default = null)
     {
         if (isset($array[$value])) {
-            return $array['value'];
+            return InlineFunction::formatReturn($array['value']);
         }
-        return $default;
+        return InlineFunction::formatReturn($default);
     }
 }
