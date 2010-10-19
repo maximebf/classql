@@ -88,7 +88,8 @@
 
         <context id="keywords" style-ref="keyword">
           <keyword>abstract</keyword>
-          <keyword>as</keyword>
+          <keyword>represents</keyword>
+          <keyword>returns</keyword>
           <keyword>catch</keyword>
           <keyword>namespace</keyword>
           <keyword>extends</keyword>
@@ -102,6 +103,7 @@
           <keyword>update</keyword>
           <keyword>null</keyword>
           <keyword>self</keyword>
+          <keyword>last_insert_id</keyword>
         </context>
 
         <context id="function">
