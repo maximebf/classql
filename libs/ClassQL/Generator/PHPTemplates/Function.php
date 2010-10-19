@@ -8,11 +8,6 @@
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php if (isset($query)): ?>
-<?php if ($cached): ?>
-    if (\ClassQL\Session::getCache()->has('<?php echo $cacheid ?>')) {
-        return \ClassQL\Session::getCache()->get('<?php echo $cacheid ?>');
-    }
-<?php endif; ?>
     $stmt = <?php echo $this->_renderScope($type, $modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 <?php if ($query['returns']['type'] != 'null'): ?>
 <?php if ($query['returns']['type'] == 'collection'): ?>
@@ -38,9 +33,6 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
     $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
 <?php endif; ?>
 <?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'class', 'collection'))):?>
-<?php if ($cached): ?>
-    \ClassQL\Session::getCache()->set('<?php echo $cacheid ?>', $data);
-<?php endif; ?>
     return $data;
 <?php endif; ?>
 }
