@@ -19,6 +19,8 @@
  
 namespace ClassQL\Functions;
 
+use ClassQL\InlineFunction;
+
 class Test
 {
     public static function call($expression, $true, $false = null)
