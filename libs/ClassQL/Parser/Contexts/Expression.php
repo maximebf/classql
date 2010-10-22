@@ -17,17 +17,24 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Functions;
+namespace ClassQL\Parser\Contexts;
 
-use ClassQL\InlineFunction;
+use ClassQL\Parser\CatchAllContext;
 
-class SwitchArray
+class Expression extends CatchAllContext
 {
-    public static function call($value, $array, $default = null)
+    public function tokenVariable($value)
     {
-        if (isset($array[$value])) {
-            return InlineFunction::formatReturn($array['value']);
-        }
-        return InlineFunction::formatReturn($default);
+        $this->_value .= str_replace(array('[', ']'), array("['", "']"), $value);
+    }
+    
+    public function tokenArrayOpen()
+    {
+        $this->_value .= $this->enterContext('RewriteArray');
+    }
+    
+    public function tokenParenthClose()
+    {
+        $this->exitContext($this->_value);
     }
 }

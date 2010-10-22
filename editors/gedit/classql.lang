@@ -51,7 +51,7 @@
         </context>
 
         <context id="attribute" style-ref="attribute">
-          <match>@{1,2}[a-zA-Z0-9_]+</match>
+          <match>@[a-zA-Z0-9_\\]+(::[a-zA-Z0-9_]+)?</match>
         </context>
 
         <context id="array-operators" style-ref="type">
@@ -131,6 +131,11 @@
           <end>\)</end>
           <include>
             <context ref="variable"/>
+            <context ref="double-quoted-string"/>
+            <context ref="single-quoted-string"/>
+            <context ref="array-operators"/>
+            <context ref="cpp-line-comment"/>
+            <context ref="c-block-comment"/>
           </include>
         </context>
 

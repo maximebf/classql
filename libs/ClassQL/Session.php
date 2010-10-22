@@ -139,6 +139,19 @@ final class Session
         return self::$_connection->rollBack();
     }
     
+    public static function transaction(Closure $closure)
+    {
+        self::beginTransaction();
+        try {
+            $result = $closure();
+        } catch (\Exception $e) {
+            self::rollbackTransaction();
+            throw $e;
+        }
+        self::commitTransaction();
+        return $result;
+    }
+    
     public static function query($query, $params = array())
     {
         

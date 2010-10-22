@@ -22,28 +22,27 @@ namespace ClassQL;
 class AliasResolver
 {
     /** @var array */
-    private static $_aliases = array(
-        'if' => '\ClassQL\Functions\Test::call',
-        'switch' => '\ClassQL\Functions\SwitchArray::call'
-    );
+    protected static $_aliases = array();
     
     /**
      * @param string $alias
      * @param mixed $value
      */
-    public static function register($alias, $value)
+    public static function registerAlias($alias, $value)
     {
-        self::$_aliases[$alias] = $value;
+        $classname = get_called_class();
+        $classname::$_aliases[$alias] = $value;
     }
     
     /**
      * @param string $alias
      * @param mixed $value
      */
-    public static function unregister($alias)
+    public static function unregisterAlias($alias)
     {
-        if (isset(self::$_aliases[$alias])) {
-            unset(self::$_aliases[$alias]);
+        $classname = get_called_class();
+        if (isset($classname::$_aliases[$alias])) {
+            unset($classname::$_aliases[$alias]);
         }
     }
     
@@ -53,10 +52,11 @@ class AliasResolver
      * @param string $alias
      * @return mixed
      */
-    public static function resolve($alias)
+    public static function resolveAlias($alias)
     {
-        if (isset(self::$_aliases[$alias])) {
-            return self::$_aliases[$alias];
+        $classname = get_called_class();
+        if (isset($classname::$_aliases[$alias])) {
+            return $classname::$_aliases[$alias];
         }
         return null;
     }

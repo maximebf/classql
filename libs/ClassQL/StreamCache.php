@@ -126,6 +126,19 @@ class StreamCache
     }
     
     /**
+     * Clears the cache
+     */
+    public static function clear()
+    {
+        foreach (new \DirectoryIterator(self::$_cacheDir) as $file) {
+            if (!$file->isFile() || substr($file->getFilename(), 0, 1) === '.') {
+                continue;
+            }
+            unlink($file->getPathname());
+        }
+    }
+    
+    /**
      * Returns the filename of a cached file
      * 
      * @param string $filename

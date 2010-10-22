@@ -19,7 +19,7 @@
  
 namespace ClassQL\Generator;
 
-use ClassQL\AliasResolver;
+use ClassQL\InlineFunctions;
 
 class PHPGenerator extends AbstractGenerator
 {
@@ -145,21 +145,21 @@ class PHPGenerator extends AbstractGenerator
     
     /**
      * @param array $array
-     * @param string $divider
+     * @param array $varsInScope
      * @return string
      */
-    protected function _renderArray($array, $divider = ', ')
+    protected function _renderArray($array, $varsInScope = array())
     {
         $elements = array();
         foreach ($array as $element) {
-            $item = $this->_getRenderedArgsItem($element);
+            $item = $this->_getRenderedArgsItem($element, $varsInScope);
             if (isset($element['key'])) {
                 $elements[] = "'${element['key']}' => $item";
             } else {
                 $elements[] = $item;
             }
         }
-        return 'array(' . implode($divider, $elements) . ')';
+        return 'array(' . implode(', ', $elements) . ')';
     }
     
     /**
@@ -176,14 +176,17 @@ class PHPGenerator extends AbstractGenerator
             return $varname;
         }
         if ($item['type'] == 'array') {
-            return $this->_renderArray($item['value']);
+            return $this->_renderArray($item['value'], $varsInScope);
         }
         if ($item['type'] == 'identifier') {
             return "'{$item['value']}'";
         }
         if ($item['type'] == 'sql') {
-            return "array(\"" . $this->_renderQuery($item['value']) 
+            return "new \\ClassQL\\SqlString(\"" . $this->_renderQuery($item['value']) 
                  . "\", " . $this->_renderQueryParams($item['value'], $varsInScope) . ")";
+        }
+        if ($item['type'] == 'function') {
+            return $this->_renderInlineFunc($item['value'], $varsInScope);
         }
         return $item['value'];
     }
@@ -199,8 +202,8 @@ class PHPGenerator extends AbstractGenerator
         foreach ($query['vars'] as $var) {
             if ($var == '$this') {
                 $sql = str_replace('$this', '" . self::$tableName . "', $sql); 
-            } else if (isset($query['functions'][$var])) {
-                $sql = str_replace($var, "{{$var}_sql}", $sql);
+            } else if (isset($query['inlines'][$var])) {
+                $sql = str_replace($var, "{{$var}->sql}", $sql);
             } else {
                 $sql = str_replace($var, '?', $sql);
             }
@@ -218,12 +221,12 @@ class PHPGenerator extends AbstractGenerator
         $params = array();
         $currentParams = array();
         foreach ($query['vars'] as $var) {
-            if (isset($query['functions'][$var])) {
+            if (isset($query['inlines'][$var])) {
                 if (!empty($currentParams)) {
                     $params[] = 'array(' . implode(', ', $currentParams) . ')';
                     $currentParams = array();
                 }
-                $params[] = "{$var}_params";
+                $params[] = "{$var}->params";
             } else {
                 $varname = $this->_getCanonicalVarName($var);
                 $var = str_replace(array('[', ']'), array("['", "']"), $var);
@@ -274,6 +277,14 @@ class PHPGenerator extends AbstractGenerator
         return $var;
     }
     
+    protected function _renderInlineFunc($function, $params = array(), $class = false)
+    {
+        return sprintf('%s(%s)',
+            $this->_getInlineFuncName($function['name'], $class),
+            $this->_renderArgs($function['args'], array_keys($params))
+        );
+    }
+    
     /**
      * Returns the string used to call a function
      * 
@@ -291,7 +302,7 @@ class PHPGenerator extends AbstractGenerator
             return '$this->' . $methodName;
         }
         
-        if (($realName = AliasResolver::resolve($name)) !== null) {
+        if (($realName = InlineFunctions::resolveAlias($name)) !== null) {
             return $realName;
         }
         return $name;

@@ -78,6 +78,44 @@ class Arguments extends Context
         );
     }
     
+    public function tokenAtWord($value)
+    {
+        $args = array();
+        if ($this->getParser()->isNextToken('parenthOpen')) {
+            $this->getParser()->skipNext();
+            $args = $this->enterContext('Arguments');
+        }
+        
+        if ($this->getParser()->isNextToken('curlyOpen', array('whitespace'))) {
+            $this->getParser()->skipUntil('curlyOpen')->skipNext();
+            $args[] = array(
+                'type' => 'sql',
+                'value' => $this->enterContext('Block')
+            );
+        }
+        
+        $this->_arg = array(
+            'type' => 'function', 
+            'value' => array(
+                'name' => substr($value, 1),
+                'args' => $args
+            )
+        );
+    }
+    
+    public function tokenExpression()
+    {
+        if (!empty($this->_arg)) {
+            // only one token possible
+            $this->_syntaxError();
+        }
+        
+        $this->_arg = array(
+            'type' => 'expression', 
+            'value' => $this->enterContext('Expression')
+        );
+    }
+    
     public function tokenCurlyOpen()
     {
         if (!empty($this->_arg)) {

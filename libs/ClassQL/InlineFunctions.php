@@ -1,0 +1,104 @@
+<?php
+/**
+ * ClassQL
+ * Copyright (c) 2010 Maxime Bouroumeau-Fuseau
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @author Maxime Bouroumeau-Fuseau
+ * @copyright 2010 (c) Maxime Bouroumeau-Fuseau
+ * @license http://www.opensource.org/licenses/mit-license.php
+ * @link http://github.com/maximebf/classql
+ */
+ 
+namespace ClassQL;
+
+class InlineFunctions extends AliasResolver
+{
+    /** @var array */
+    protected static $_aliases = array(
+        'if' => '\ClassQL\InlineFunctions::test',
+        'switch' => '\ClassQL\InlineFunctions::switchArray',
+        'implode' => '\ClassQL\InlineFunctions::implode',
+        'and' => '\ClassQL\InlineFunctions::_and',
+        'or' => '\ClassQL\InlineFunctions::_or',
+        'set' => '\ClassQL\InlineFunctions::set',
+        'where' => '\ClassQL\InlineFunctions::where'
+    );
+    
+    public static function test($expression, $true, $false = null)
+    {
+        if ($expression) {
+            return $true;
+        }
+        return $false;
+    }
+    
+    public static function switchArray($value, $array, $default = null)
+    {
+        if (isset($array[$value])) {
+            return $array['value'];
+        }
+        return $default;
+    }
+    
+    public static function implode($separator, $array)
+    {
+        $parts = array();
+        $params = array();
+        
+        foreach ($array as $key => $value) {
+            if (empty($value)) {
+                continue;
+            } else if ($value instanceof SqlString) {
+                $parts[] = $value->sql;
+                $params = array_merge($params, $value->params);
+            } else if (is_array($value)) {
+                $sqlString = self::implode($separator, $value);
+                $parts[] = $sqlString->sql;
+                $params = array_merge($params, $sqlString->params);
+            } else if (is_string($key)) {
+                $parts[] = "$key = ?";
+                $params[] = $value;
+            } else {
+                $parts[] = (string) $value;
+            }
+        }
+        
+        return new SqlString(implode($separator, $parts), $params);
+    }
+    
+    public static function _and($array)
+    {
+        $array = func_get_args();
+        return self::implode(' AND ', $array);
+    }
+    
+    public static function _or($array)
+    {
+        $array = func_get_args();
+        return self::implode(' OR ', $array);
+    }
+    
+    public static function set($array)
+    {
+        $array = func_get_args();
+        return self::implode(', ', $array);
+    }
+    
+    public static function where($array)
+    {
+        $conditions = func_get_args();
+        $where = self::_and($conditions);
+        if (empty($where->sql)) {
+            return null;
+        }
+        return new SqlString("WHERE {$where->sql}", $where->params);
+    }
+}

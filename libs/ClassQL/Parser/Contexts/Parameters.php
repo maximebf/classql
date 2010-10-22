@@ -19,18 +19,12 @@
  
 namespace ClassQL\Parser\Contexts;
 
-use ClassQL\Parser\Context;
+use ClassQL\Parser\CatchAllContext;
 
-class Parameters extends Context
+class Parameters extends CatchAllContext
 {
     /** @var string */
     protected $_paramName;
-    
-    /** @var string */
-    protected $_paramValue;
-    
-    /** @var bool */
-    protected $_hasDefaultValue = false;
     
     public function tokenVariable($value)
     {
@@ -40,40 +34,24 @@ class Parameters extends Context
         }
         
         $this->_paramName = $value;
-        $this->_paramValue = $value;
+        $this->_value .= $value;
     }
     
-    public function tokenEqual()
+    public function tokenArrayOpen()
     {
-        $this->_hasDefaultValue = true;
-    }
-    
-    public function tokenValue($value)
-    {
-        if (!$this->_hasDefaultValue) {
-            $this->_syntaxError();
-        }
-        $this->_paramValue .= " = $value";
-    }
-    
-    public function tokenString($value)
-    {
-        if (!$this->_hasDefaultValue) {
-            $this->_syntaxError();
-        }
-        $this->_paramValue .= " = $value";
+        $this->_value .= $this->enterContext('RewriteArray');
     }
     
     public function tokenComma()
     {
         $this->exitContext(array_merge(
-            array($this->_paramName => $this->_paramValue), 
+            array($this->_paramName => trim($this->_value)), 
             $this->enterContext('Parameters')
         ));
     }
     
     public function tokenParenthClose()
     {
-        $this->exitContext(array($this->_paramName => $this->_paramValue));
+        $this->exitContext(array($this->_paramName => trim($this->_value)));
     }
 }

@@ -38,7 +38,7 @@ class ContainerContext extends Context
         $this->_latestModifiers[] = $value;
     }
     
-    public function tokenAttribute($value)
+    public function tokenAtWord($value)
     {
         $args = array();
         if ($this->getParser()->isNextToken('parenthOpen', array('whitespace'))) {

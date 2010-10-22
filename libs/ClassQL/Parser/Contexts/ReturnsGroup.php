@@ -50,14 +50,18 @@ class ReturnsGroup extends Context
     
     public function tokenArrayOpen()
     {
-        if (empty($this->_return) || $this->_return['type'] !== 'class') {
+        if (empty($this->_return) || !in_array($this->_return['type'], array('class', 'value'))) {
             $this->_syntaxError('arrayOpen');
         }
     }
     
     public function tokenArrayClose()
     {
-        $this->_return['type'] = 'collection';
+        if ($this->_return['type'] == 'value') {
+            $this->_return['type'] == 'value_collection';
+        } else {
+            $this->_return['type'] = 'collection';
+        }
     }
     
     public function tokenParenthOpen()

@@ -54,9 +54,10 @@ class Lexer extends BaseLexer
             'pointer' => '\-\>',
             'comma' => ',',
             'callback' => '[a-zA-Z0-9_\\\]+::[a-zA-Z0-9_]+',
-            'attribute' => '\@[a-zA-Z0-9_\\\]+(::[a-zA-Z0-9_]+)?',
-            'value' => '("((?:[^\\\]*?(?:\\\")?)*?)"|[0-9]+)',
-            'boolean' => '(true|false)',
+            'atWord' => '\@[a-zA-Z0-9_\\\]+(::[a-zA-Z0-9_]+)?',
+            'expression' => '\@\(',
+            'value' => '("((?:[^\\\]*?(?:\\\")?)*?)"|\'((?:[^\\\]*?(?:\\\\\')?)*?)\'|[0-9]+)',
+            'boolean' => '(true|false|null)',
             'string' => '[a-zA-Z0-9_\\\]+',
             'whitespace' => "[\t\s]+"
         ));

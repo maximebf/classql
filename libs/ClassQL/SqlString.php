@@ -17,17 +17,27 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL\Functions;
+namespace ClassQL;
 
-use ClassQL\InlineFunction;
-
-class Test
+class SqlString
 {
-    public static function call($expression, $true, $false = null)
+    public $sql = '';
+    
+    public $params = array();
+    
+    public function __construct($sql, array $params = array())
     {
-        if ($expression) {
-            return InlineFunction::formatReturn($true);
+        if ($sql instanceof SqlString) {
+            $this->sql = $sql->sql;
+            $this->params = $sql->params;
+        } else {
+            $this->sql = $sql ?: '';
+            $this->params = $params;
         }
-        return InlineFunction::formatReturn($false);
+    }
+    
+    public function __toString()
+    {
+        return $this->sql;
     }
 }

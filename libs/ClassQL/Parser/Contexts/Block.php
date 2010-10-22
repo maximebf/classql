@@ -30,7 +30,7 @@ class Block extends CatchAllContext
     protected $_vars = array();
     
     /** @var array */
-    protected $_functions = array();
+    protected $_inlines = array();
     
     public function tokenVariable($value)
     {
@@ -39,7 +39,7 @@ class Block extends CatchAllContext
         $this->_value .= $value;
     }
     
-    public function tokenAttribute($value)
+    public function tokenAtWord($value)
     {
         $args = array();
         if ($this->getParser()->isNextToken('parenthOpen')) {
@@ -59,10 +59,26 @@ class Block extends CatchAllContext
         $this->_vars[] = $variable;
         $this->_value .= $variable;
         
-        $this->_functions[$variable] = array(
+        $this->_inlines[$variable] = array(
+            'type' => 'function',
             'name' => substr($value, 1),
             'variable' => $variable,
             'args' => $args
+        );
+    }
+    
+    public function tokenExpression()
+    {
+        $expression = $this->enterContext('Expression');
+        
+        $variable = '$expr' . uniqid();
+        $this->_vars[] = $variable;
+        $this->_value .= $variable;
+        
+        $this->_inlines[$variable] = array(
+            'type' => 'expression',
+            'variable' => $variable,
+            'expression' => $expression
         );
     }
     
@@ -83,7 +99,7 @@ class Block extends CatchAllContext
         $this->exitContext(array(
             'sql' => trim($this->_value),
             'vars' => $this->_vars,
-            'functions' => $this->_functions
+            'inlines' => $this->_inlines
         ));
     }
 }

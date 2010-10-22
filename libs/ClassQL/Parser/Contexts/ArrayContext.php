@@ -25,30 +25,30 @@ use ClassQL\Parser\Context,
 class ArrayContext extends Arguments
 {
     /** @var string */
-    protected $_nextKey = null;
+    protected $_key = null;
     
-    public function tokenArrayAssoc()
+    public function tokenString($value)
     {
-        $key = $this->_arg;
-        if ($key['type'] != 'identifier') {
-            throw new Exception("Wrong type for array key '${key['value']}'");
+        if ($this->getParser()->isNextToken('arrayAssoc', array('whitespace'))) {
+            $this->getParser()->skipUntil('arrayAssoc')->skipNext();
+            $this->_key = $value;
+        } else {
+            parent::tokenString($value);
         }
-        $this->_arg = null;
-        $this->_nextKey = $key['value'];
     }
     
     public function tokenComma()
     {
-        if ($this->_nextKey !== null) {
-            $this->_arg['key'] = $this->_nextKey;
+        if ($this->_key !== null) {
+            $this->_arg['key'] = $this->_key;
         }
         $this->exitContext(array_merge(array($this->_arg), $this->enterContext('ArrayContext')));
     }
     
     public function tokenArrayClose()
     {
-        if ($this->_nextKey !== null) {
-            $this->_arg['key'] = $this->_nextKey;
+        if ($this->_key !== null) {
+            $this->_arg['key'] = $this->_key;
         }
         $this->exitContext(array($this->_arg));
     }

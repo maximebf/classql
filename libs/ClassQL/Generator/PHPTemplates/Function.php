@@ -44,25 +44,27 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
  */
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>) {
-    list($sql, $params) = <?php echo $this->_renderScope($type, $modifiers) . $query_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
-    $stmt = \ClassQL\Session::getConnection()->prepare($sql);
-    $stmt->execute($params);
+    $sqlString = <?php echo $this->_renderScope($type, $modifiers) . $query_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
+    $stmt = \ClassQL\Session::getConnection()->prepare($sqlString->sql);
+    $stmt->execute($sqlString->params);
     return $stmt;
 }
 
 /**
  * Generates the query associated to {@see <?php echo $name ?>()} 
- * @return array (sql, params)
+ * @return \ClassQL\SqlString
  */
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $query_func_name; ?>(<?php echo implode(', ', $params); ?>) {
-<?php foreach ($query['functions'] as $func): ?>
-    list(<?php echo $func['variable'] ?>_sql, <?php echo $func['variable'] ?>_params) = 
-        <?php echo $this->_getInlineFuncName($func['name'], $class) ?>(<?php 
-        echo $this->_renderArgs($func['args'], array_keys($params)) ?>);
+<?php foreach ($query['inlines'] as $inline): ?>
+<?php if ($inline['type'] == 'function'): ?>
+    <?php echo $inline['variable'] ?> =  new \ClassQL\SqlString(<?php echo $this->_renderInlineFunc($inline, $params, $class) ?>);
+<?php elseif ($inline['type'] == 'expression'): ?>
+    <?php echo $inline['variable'] . ' = ' . $inline['expression'] ?>;
+<?php endif; ?>
 <?php endforeach; ?>
     $sql = "<?php echo $this->_renderQuery($query); ?>";
     $params = <?php echo $this->_renderQueryParams($query, array_keys($params)) ?>;
-    return array($sql, $params);
+    return new \ClassQL\SqlString($sql, $params);
 }
 <?php endif; ?>

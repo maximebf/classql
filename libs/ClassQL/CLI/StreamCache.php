@@ -20,23 +20,53 @@
 namespace ClassQL\CLI;
 
 use ClassQL\CLI,
-    ClassQL\StreamCache,
-    \DirectoryIterator;
+    \DirectoryIterator,
+    ClassQL\Session,
+    ClassQL\Generator\PHPGenerator;
 
 class StreamCache extends CLI
 {
+    /**
+     * {@inheritDoc}
+     */
+    public function execute(array $args, array $options = array())
+    {
+        if (!\ClassQL\StreamCache::isEnabled()) {
+            $this->println('StreamCache must be enabled');
+            return;
+        }
+        parent::execute($args, $options);
+    }
+    
+    public function executeCompile($args)
+    {
+        foreach ($args as $filename) {
+            $this->_compile($filename);
+        }
+    }
+    
     public function executeClear($args)
     {
-        if (!StreamCache::isEnabled()) {
-            $this->println('ERROR: No cache used');
+        \ClassQL\StreamCache::clear();
+    }
+    
+    protected function _compile($filename)
+    {
+        if (is_dir($filename)) {
+            foreach (new DirectoryIterator($filename) as $file) {
+                if (substr($file->getFilename(), 0, 1) !== '.') {
+                    $this->_compile($file->getPathname());
+                }
+            }
+            return;
         }
         
-        $dir = StreamCache::getDirectory();
-        foreach (new DirectoryIterator($dir) as $file) {
-            if (!$file->isFile() || substr($file->getFilename(), 0, 1) === '.') {
-                continue;
-            }
-            unlink($file->getPathname());
+        if (\ClassQL\StreamCache::has($filename)) {
+            return;
         }
+        
+        $ast = Session::getParser()->parseFile($filename);
+        $generator = new PHPGenerator();
+        \ClassQL\StreamCache::set($filename, $generator->generate($ast));
     }
 }

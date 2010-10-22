@@ -17,18 +17,28 @@
  * @link http://github.com/maximebf/classql
  */
  
-namespace ClassQL;
+namespace ClassQL\Parser\Contexts;
 
-class InlineFunction
+use ClassQL\Parser\CatchAllContext;
+
+class RewriteArray extends CatchAllContext
 {
-    public static function formatReturn($data)
+    public function tokenString($value)
     {
-        if (empty($data)) {
-            return array('', array());
+        if ($this->getParser()->isNextToken('arrayAssoc', array('whitespace'))) {
+            $this->_value .= "'$value'";
+        } else {
+            $this->_value .= $value;
         }
-        if (is_array($data)) {
-            return $data;
-        }
-        return array($data, array());
+    }
+    
+    public function tokenArrayOpen()
+    {
+        $this->_value .= $this->enterContext('RewriteArray');
+    }
+    
+    public function tokenArrayClose()
+    {
+        $this->exitContext(sprintf('array(%s)', $this->_value));
     }
 }
