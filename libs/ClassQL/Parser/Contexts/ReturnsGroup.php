@@ -38,7 +38,7 @@ class ReturnsGroup extends Context
     
     public function tokenString($value)
     {
-        if (in_array($value, array('null', 'update', 'value', 'last_insert_id'))) {
+        if (in_array($value, array('update', 'value', 'last_insert_id'))) {
             $this->_return = array('type' => $value);
         } else {
             $this->_return = array(

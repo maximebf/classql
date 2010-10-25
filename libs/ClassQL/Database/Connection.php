@@ -42,8 +42,9 @@ class Connection extends PDO
     public function __construct($dsn, $username = null, $passwd = null, array $options = array())
     {
         parent::__construct($dsn, $username, $passwd, $options);
-        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('ClassQL\Database\Statement', array()));
         $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, 
+            array('ClassQL\Database\Statement', array()));
     }
     
     /**
@@ -115,11 +116,58 @@ class Connection extends PDO
     }
     
     /**
+     * Wraps a closure into a transaction
+     * 
+     * @param Closure $closure
+     * @return mixed
+     */
+    public function transaction(Closure $closure)
+    {
+        $this->beginTransaction();
+        try {
+            $result = $closure($this);
+        } catch (\Exception $e) {
+            $this->rollBack();
+            throw $e;
+        }
+        $this->commit();
+        return $result;
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public function query($statement)
     {
         return $this->_profileQuery('parent::query', $statement);
+    }
+    
+    /**
+     * Prepares and executes a statement
+     * 
+     * @param string $query
+     * @param array $params
+     * @return Statement
+     */
+    public function queryParams($statement, array $params = array())
+    {
+        $stmt = $this->prepare($statement);
+        $stmt->execute($params);
+        return $stmt;
+    }
+    
+    /**
+     * Prepares and executes a statement, 
+     * returns the value of the first column or the first row
+     * 
+     * @param string $query
+     * @param array $params
+     * @return mixed
+     */
+    public function queryValue($statement, array $params = array())
+    {
+        $stmt = $this->queryParams($statement, $params);
+        return $stmt->fetchColumn();
     }
     
     /**
@@ -153,17 +201,37 @@ class Connection extends PDO
     }
     
     /**
-     * Prepares and executes a statement
+     * Executes a SELECT * on $tableName
      * 
      * @param string $query
      * @param array $params
-     * @return Statement
+     * @param string $afterWhere
+     * @return array
      */
-    public function select($query, array $params = array())
+    public function select($tableName, $where = null, $afterWhere = '')
     {
+        list($where, $params) = $this->_buildWhere($where);
+        $query = "SELECT * FROM $tableName $where $afterWhere";
         $stmt = $this->prepare($query);
         $stmt->execute($params);
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Prepares and executes a statement
+     * 
+     * @param string $query
+     * @param string $column
+     * @param array $params
+     * @return mixed
+     */
+    public function selectValue($tableName, $column, $where = null)
+    {
+        list($where, $params) = $this->_buildWhere($where);
+        $query = "SELECT $column FROM $tableName $where";
+        $stmt = $this->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchColumn();
     }
     
     /**
@@ -240,6 +308,7 @@ class Connection extends PDO
         
         $stmt = $this->prepare($query);
         $stmt->execute($params);
+        return $stmt;
     }
     
     /**

@@ -57,7 +57,8 @@ class Lexer extends BaseLexer
             'atWord' => '\@[a-zA-Z0-9_\\\]+(::[a-zA-Z0-9_]+)?',
             'expression' => '\@\(',
             'value' => '("((?:[^\\\]*?(?:\\\")?)*?)"|\'((?:[^\\\]*?(?:\\\\\')?)*?)\'|[0-9]+)',
-            'boolean' => '(true|false|null)',
+            'boolean' => '(true|false)',
+            'null' => 'null',
             'string' => '[a-zA-Z0-9_\\\]+',
             'whitespace' => "[\t\s]+"
         ));

@@ -2,7 +2,13 @@
 
 namespace ClassQL\Database;
 
-class FirephpProfiler implements Profiler
+if (!class_exists('FirePHP')) {
+    throw new \Exception('ClassQL\Database\FirePHPProfiler needs the FirePHP class which is missing');
+}
+
+use FirePHP;
+
+class FirePHPProfiler implements Profiler
 {
     /** @var array */
     protected $_currentQuery;
@@ -35,8 +41,8 @@ class FirephpProfiler implements Profiler
             array($query, $params, $time, $outcome)
         );
         
-        if ($firephp = FirePHP::getInstance()) {
-            $firephp->table('SQL', $table);
+        if (!headers_sent() && $firephp = FirePHP::getInstance()) {
+            $firephp->table($query, $table);
         }
     }
 }

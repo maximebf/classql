@@ -124,37 +124,44 @@ final class Session
         return self::$_generator;
     }
     
+    /**
+     * @see Connection::beginTransaction()
+     */
     public static function beginTransaction()
     {
         return self::$_connection->beginTransaction();
     }
     
+    /**
+     * @see Connection::commit()
+     */
     public static function commitTransaction()
     {
         return self::$_connection->commit();
     }
     
+    /**
+     * @see Connection::rollBack()
+     */
     public static function rollbackTransaction()
     {
         return self::$_connection->rollBack();
     }
     
+    /**
+     * @see Connection::transaction()
+     */
     public static function transaction(Closure $closure)
     {
-        self::beginTransaction();
-        try {
-            $result = $closure();
-        } catch (\Exception $e) {
-            self::rollbackTransaction();
-            throw $e;
-        }
-        self::commitTransaction();
-        return $result;
+        return self::$_connection->transaction($closure);
     }
     
-    public static function query($query, $params = array())
+    /**
+     * @see Connection::queryParams()
+     */
+    public static function query($query, array $params = array())
     {
-        
+        return self::$_connection->queryParams($query, $params);
     }
 }
 

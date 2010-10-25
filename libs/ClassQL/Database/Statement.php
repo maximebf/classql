@@ -33,7 +33,7 @@ class Statement extends PDOStatement
     /**
      * @param Profiler $profiler
      */
-    private function __construct(Profiler $profiler = null) 
+    protected function __construct(Profiler $profiler = null) 
     {
         $this->_profiler = $profiler;
     }
@@ -46,13 +46,17 @@ class Statement extends PDOStatement
         $this->_profiler !== null && $this->_profiler->startQuery($this->queryString, $params);
     
         try {
-            $returns = parent::execute($params);
+            $success = parent::execute($params);
         } catch (PDOException $e) {
             $this->_profiler !== null && $this->_profiler->stopQuery($e);
             throw $e;
         }
     
         $this->_profiler !== null && $this->_profiler->stopQuery();
-        return $returns;
+        
+        if ($success) {
+            return $this;
+        }
+        return false;
     }
 }
