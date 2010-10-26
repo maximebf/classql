@@ -78,6 +78,19 @@ class Arguments extends Context
         );
     }
     
+    public function tokenNull($value)
+    {
+        if (!empty($this->_arg)) {
+            // only one token possible
+            $this->_syntaxError();
+        }
+        
+        $this->_arg = array(
+            'type' => 'null',
+            'value' => $value
+        );
+    }
+    
     public function tokenAtWord($value)
     {
         $args = array();
