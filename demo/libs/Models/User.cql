@@ -10,15 +10,23 @@ User represents users returns \Demo\User {
     lastName text;
     created timestamp;
     
-    $fullName = firstName || ' ' || lastName as fullName;
-    $SELECT = SELECT id, email, firstName, lastName, $fullName;
+    $fullName = users.firstName || ' ' || users.lastName as fullName;
+    $selectColumns = users.id, users.email, users.firstName, users.lastName, $fullName;
+    $SELECT = SELECT $selectColumns;
+
+    static find($id) : self {
+        $SELECT FROM $this WHERE id = $id
+    }
     
     static findAll() : self[] {
         $SELECT FROM $this
     }
-
-    static findById($id) : self {
-        $SELECT FROM $this WHERE id = $id
+    
+    static findAllWithMessages() : self[] + messages:\Demo\Message[] {
+        $SELECT,
+            @composite('messages', 'messages.id, messages.user_id, messages.message')
+        FROM $this
+        LEFT JOIN messages ON messages.user_id = users.id
     }
     
     static count() : value {

@@ -23,6 +23,12 @@ use ClassQL\InlineFunctions;
 
 class PHPGenerator extends AbstractGenerator
 {
+    protected $_currentNamespace;
+    
+    protected $_currentClass;
+    
+    protected $_currentOperation;
+    
     /**
      * Constructor
      */
@@ -43,6 +49,8 @@ class PHPGenerator extends AbstractGenerator
      */
     protected function _generateFile(array $ast)
     {
+        $this->_currentNamespace = $ast['namespace'];
+        
         foreach ($ast['objects'] as &$object) {
             if ($object['type'] == 'function') {
                 $object = $this->_generateFunction($object);
@@ -62,11 +70,11 @@ class PHPGenerator extends AbstractGenerator
      */
     protected function _generateFunction($function)
     {
+        $this->_currentClass = false;
         $function['execute_func_name'] = 'execute_' . $function['name'];
         $function['statement_func_name'] = 'get_statement_for_' . $function['name'];
         $function['query_func_name'] = 'get_query_for_' . $function['name'];
         $function['filter_func_name'] = 'filter_results_for_' . $function['name'];
-        $function['class'] = false;
         return $this->_generateOperation($function);
     }
     
@@ -78,12 +86,12 @@ class PHPGenerator extends AbstractGenerator
      */
     protected function _generateClass($class)
     {
+        $this->_currentClass = $class;
         foreach ($class['methods'] as &$method) {
             $method['execute_func_name'] = 'execute' . ucfirst($method['name']);
             $method['statement_func_name'] = 'getStatementFor' . ucfirst($method['name']);
             $method['query_func_name'] = 'getQueryFor' . ucfirst($method['name']);
             $method['filter_func_name'] = 'filterResultsFor' . ucfirst($method['name']);
-            $method['class'] = $class;
             $method['php'] = str_replace("\n", "\n    ", $this->_generateOperation($method));
         }
         return $this->_renderTemplate('class', $class);
@@ -97,6 +105,7 @@ class PHPGenerator extends AbstractGenerator
      */
     protected function _generateOperation($operation)
     {
+        $this->_currentOperation = $operation;
         return $this->_renderTemplate('function', $operation);
     }
     
@@ -118,11 +127,11 @@ class PHPGenerator extends AbstractGenerator
      * @param string $type
      * @param array $modifiers
      */
-    protected function _renderScope($type, $modifiers)
+    protected function _renderScope($modifiers)
     {
         if (in_array('static', $modifiers)) {
             return 'self::';
-        } else if ($type == 'method') {
+        } else if ($this->_currentClass) {
             return '$this->';
         }
         return '';
@@ -131,16 +140,15 @@ class PHPGenerator extends AbstractGenerator
     /**
      * @param array $args
      * @param array $varsInScope
-     * @param string $divider
      * @return string
      */
-    protected function _renderArgs($args, $varsInScope = array(), $divider = ', ')
+    protected function _renderArgs($args, $varsInScope = array())
     {
         $renderedArgs = array();
         foreach ($args as $arg) {
             $renderedArgs[] = $this->_getRenderedArgsItem($arg, $varsInScope);
         }
-        return implode($divider, $renderedArgs);
+        return implode(', ', $renderedArgs);
     }
     
     /**
@@ -169,9 +177,12 @@ class PHPGenerator extends AbstractGenerator
     protected function _getRenderedArgsItem($item, $varsInScope = array())
     {
         if ($item['type'] == 'variable') {
+            if ($item['value'] == '$this') {
+                return 'self::$tableName';
+            }
             $varname = str_replace(array('[', ']'), array("['", "']"), $item['value']);
             if (!in_array($this->_getCanonicalVarName($item['value']), $varsInScope)) {
-                return '$this->' . substr($varname, 1);
+                return $this->_renderScope($this->_currentOperation['modifiers']) . substr($varname, 1);
             }
             return $varname;
         }
@@ -179,7 +190,7 @@ class PHPGenerator extends AbstractGenerator
             return $this->_renderArray($item['value'], $varsInScope);
         }
         if ($item['type'] == 'identifier') {
-            return "'{$item['value']}'";
+            return "'" . $this->_resolveClassName($item['value']) . "'";
         }
         if ($item['type'] == 'sql') {
             return "new \\ClassQL\\SqlString(\"" . $this->_renderQuery($item['value']) 
@@ -233,7 +244,7 @@ class PHPGenerator extends AbstractGenerator
                 if (in_array($varname, $inScope)) {
                     $currentParams[] = $var;
                 } else if ($var !== '$this') {
-                    $currentParams[] = '$this->' . substr($var, 1);
+                    $currentParams[] = $this->_renderVar($var, $inScope);
                 }
             }
         }
@@ -260,9 +271,29 @@ class PHPGenerator extends AbstractGenerator
         if ($var === '$this') {
             $var = 'self::$tableName';
         } else if ($varsInScope === true || ($varsInScope !== false && !in_array($var, $varsInScope))) {
-            $var = '$this->' . substr($var, 1);
+            if (in_array('static', $this->_currentOperation['modifiers'])) {
+                $var = "self::$var";
+            } else {
+                $var = '$this->' . substr($var, 1);
+            }
         }
         return str_replace(array('[', ']'), array("['", "']"), $var);
+    }
+    
+    protected function _renderMappingInfo($mappingInfo)
+    {
+        if (!isset($mappingInfo['with'])) {
+            return 'array()';
+        }
+        
+        $array = array();
+        foreach ($mappingInfo['with'] as $mapClass) {
+            $array[] = "'{$mapClass['property']}' => array('classname' => '" 
+                     . $this->_resolveClassName($mapClass['value']) 
+                     . "', 'properties' => " . $this->_renderMappingInfo($mapClass)
+                     . ", 'array' => " . ($mapClass['type'] == 'collection' ? 'true' : 'false') . ")";
+        }
+        return sprintf('array(%s)', implode(', ', $array));
     }
     
     /**
@@ -277,10 +308,10 @@ class PHPGenerator extends AbstractGenerator
         return $var;
     }
     
-    protected function _renderInlineFunc($function, $params = array(), $class = false)
+    protected function _renderInlineFunc($function, $params = array())
     {
         return sprintf('%s(%s)',
-            $this->_getInlineFuncName($function['name'], $class),
+            $this->_getInlineFuncName($function['name']),
             $this->_renderArgs($function['args'], array_keys($params))
         );
     }
@@ -289,14 +320,13 @@ class PHPGenerator extends AbstractGenerator
      * Returns the string used to call a function
      * 
      * @param string $name
-     * @param array $class
      * @return string
      */
-    protected function _getInlineFuncName($name, $class = false)
+    protected function _getInlineFuncName($name)
     {
-        if ($class && isset($class['methods'][$name])) {
+        if ($this->_currentClass && isset($this->_currentClass['methods'][$name])) {
             $methodName = 'getQueryFor' . ucfirst($name);
-            if (in_array('static', $class['methods'][$name]['modifiers'])) {
+            if (in_array('static', $this->_currentClass['methods'][$name]['modifiers'])) {
                 return 'self::' . $methodName;
             }
             return '$this->' . $methodName;
@@ -306,5 +336,13 @@ class PHPGenerator extends AbstractGenerator
             return $realName;
         }
         return $name;
+    }
+    
+    protected function _resolveClassName($identifier)
+    {
+        if ($this->_currentNamespace !== null && substr($identifier, 0, 1) !== '\\') {
+            return '\\' . trim($this->_currentNamespace, '\\') . '\\' . $identifier;
+        }
+        return $identifier;
     }
 }

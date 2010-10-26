@@ -26,4 +26,13 @@ use Parsec\CatchAllContext as BaseCatchAllContext;
  */
 class CatchAllContext extends BaseCatchAllContext
 {
+    public function tokenComment()
+    {
+        $this->enterContext('Comment');
+    }
+    
+    public function tokenCommentOpen()
+    {
+        $this->enterContext('MultilineComment');
+    }
 }

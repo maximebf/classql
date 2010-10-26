@@ -41,26 +41,27 @@ class ReturnsGroup extends Context
         if (in_array($value, array('update', 'value', 'last_insert_id'))) {
             $this->_return = array('type' => $value);
         } else {
+            $property = $value;
+            if ($this->getParser()->isNextToken('opreturns')) {
+                $this->getParser()->skipNext();
+                if (!$this->getParser()->isNextToken('string')) {
+                    $this->_syntaxError('opreturns');
+                }
+                $value = $this->getParser()->getNextTokenValue();
+                $this->getParser()->skipNext();
+            }
+            
+            $type = 'class';
+            if ($this->getParser()->isNextToken('arrayOpen')) {
+                $type = 'collection';
+                $this->getParser()->skipUntil('arrayClose')->skipNext();
+            }
+            
             $this->_return = array(
-                'type' => 'class',
-                'value' => $value
+                'type' => $type,
+                'value' => $value,
+                'property' => $property
             );
-        }
-    }
-    
-    public function tokenArrayOpen()
-    {
-        if (empty($this->_return) || !in_array($this->_return['type'], array('class', 'value'))) {
-            $this->_syntaxError('arrayOpen');
-        }
-    }
-    
-    public function tokenArrayClose()
-    {
-        if ($this->_return['type'] == 'value') {
-            $this->_return['type'] == 'value_collection';
-        } else {
-            $this->_return['type'] = 'collection';
         }
     }
     

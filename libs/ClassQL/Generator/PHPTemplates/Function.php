@@ -8,9 +8,11 @@
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php if (isset($query)): ?>
-    $stmt = <?php echo $this->_renderScope($type, $modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
+    $stmt = <?php echo $this->_renderScope($modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 <?php if ($query['returns']['type'] != 'null'): ?>
-<?php if ($query['returns']['type'] == 'collection'): ?>
+<?php if (isset($query['returns']['with'])): ?>
+    $data = $stmt->fetch<?php if ($query['returns']['type'] == 'collection') echo 'All' ?>Composite('<?php echo $query['returns']['value'] ?>', <?php echo $this->_renderMappingInfo($query['returns']) ?>);
+<?php elseif ($query['returns']['type'] == 'collection'): ?>
     $data = $stmt->fetchAll(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
 <?php elseif ($query['returns']['type'] == 'class'): ?>
     $stmt->setFetchMode(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
@@ -44,7 +46,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
  */
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>) {
-    $sqlString = <?php echo $this->_renderScope($type, $modifiers) . $query_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
+    $sqlString = <?php echo $this->_renderScope($modifiers) . $query_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
     $stmt = \ClassQL\Session::getConnection()->prepare($sqlString->sql);
     $stmt->execute($sqlString->params);
     return $stmt;
@@ -58,7 +60,7 @@ function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>
 function <?php echo $query_func_name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php foreach ($query['inlines'] as $inline): ?>
 <?php if ($inline['type'] == 'function'): ?>
-    <?php echo $inline['variable'] ?> =  new \ClassQL\SqlString(<?php echo $this->_renderInlineFunc($inline, $params, $class) ?>);
+    <?php echo $inline['variable'] ?> =  new \ClassQL\SqlString(<?php echo $this->_renderInlineFunc($inline, $params) ?>);
 <?php elseif ($inline['type'] == 'expression'): ?>
     <?php echo $inline['variable'] . ' = ' . $inline['expression'] ?>;
 <?php endif; ?>

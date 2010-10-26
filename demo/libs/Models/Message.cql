@@ -14,6 +14,11 @@ Message represents messages returns \Demo\Message {
         SELECT * FROM $this WHERE user_id = $id
     }
     
+    static findWithUser($id) : self + user:\Demo\User {
+        SELECT @columns(\Demo\Message), @with(\Demo\User, 'user')
+        FROM $this JOIN users ON users.id = $this.user_id WHERE messages.id = $id
+    }
+    
     static create($user_id, $message) : null {
         INSERT INTO $this (user_id, message) VALUES ($user_id, $message)
     }
@@ -22,7 +27,7 @@ Message represents messages returns \Demo\Message {
         DELETE FROM $this
     }
     
-    insert($toto) : last_insert_id {
+    insert() : last_insert_id {
         @create($user_id, $message)
     }
     

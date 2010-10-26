@@ -29,7 +29,13 @@ class InlineFunctions extends AliasResolver
         'and' => '\ClassQL\InlineFunctions::_and',
         'or' => '\ClassQL\InlineFunctions::_or',
         'set' => '\ClassQL\InlineFunctions::set',
-        'where' => '\ClassQL\InlineFunctions::where'
+        'where' => '\ClassQL\InlineFunctions::where',
+        'insert' => '\ClassQL\InlineFunctions::insert',
+        'update' => '\ClassQL\InlineFunctions::update',
+        'delete' => '\ClassQL\InlineFunctions::delete',
+        'composite' => '\ClassQL\InlineFunctions::composite',
+        'with' => '\ClassQL\InlineFunctions::with',
+        'columns' => '\ClassQL\InlineFunctions::columns'
     );
     
     public static function test($expression, $true, $false = null)
@@ -100,5 +106,39 @@ class InlineFunctions extends AliasResolver
             return null;
         }
         return new SqlString("WHERE {$where->sql}", $where->params);
+    }
+    
+    public static function composite($tableName, $columns)
+    {
+        if (!is_array($columns)) {
+            $columns = explode(',', $columns);
+        }
+        
+        foreach ($columns as &$column) {
+            $parts = array_map('trim', explode(' as ', $column));
+            $columnName = array_shift($parts);
+            if (count($parts) > 0) {
+                $alias = array_pop($parts);
+            } else {
+                $columnParts = explode('.', $columnName);
+                $alias = array_pop($columnParts);
+            }
+            $column = "$columnName as {$tableName}__{$alias}";
+        }
+        
+        return implode(', ', $columns);
+    }
+    
+    public static function with($className, $alias = null)
+    {
+        return self::composite($alias ?: $className::$tableName, self::columns($className));
+    }
+    
+    public static function columns($className)
+    {
+        $tableName = $className::$tableName;
+        return implode(', ', array_map(function($column) use ($tableName) {
+            return "$tableName.$column";
+        }, $className::$columns));
     }
 }
