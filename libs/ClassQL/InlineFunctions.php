@@ -60,19 +60,17 @@ class InlineFunctions extends AliasResolver
         $params = array();
         
         foreach ($array as $key => $value) {
-            if (empty($value)) {
-                continue;
-            } else if ($value instanceof SqlString) {
+            if ($value instanceof SqlString) {
                 $parts[] = $value->sql;
                 $params = array_merge($params, $value->params);
-            } else if (is_array($value)) {
+            } else if (is_array($value) && !empty($value)) {
                 $sqlString = self::implode($separator, $value);
                 $parts[] = $sqlString->sql;
                 $params = array_merge($params, $sqlString->params);
             } else if (is_string($key)) {
                 $parts[] = "$key = ?";
                 $params[] = $value;
-            } else {
+            } else if (!empty($value)) {
                 $parts[] = (string) $value;
             }
         }
