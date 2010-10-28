@@ -47,7 +47,7 @@ class Lexer extends BaseLexer
             'opreturns' => ':',
             'wildcard' => '\*',
             'with' => '\+',
-            'variable' => '\${1,2}[a-zA-Z_][a-z0-9A-Z_]*(\[[a-zA-Z0-9_]+\])*',
+            'variable' => '\${1,2}[a-zA-Z_][a-z0-9A-Z_:]*(\[[a-zA-Z0-9_]+\])*',
             'equal' => '=',
             'semiColon' => ';',
             'eol' => "\n",

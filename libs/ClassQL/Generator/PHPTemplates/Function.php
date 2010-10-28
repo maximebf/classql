@@ -65,7 +65,7 @@ function <?php echo $query_func_name; ?>(<?php echo implode(', ', $params); ?>) 
     <?php echo $inline['variable'] . ' = ' . $inline['expression'] ?>;
 <?php endif; ?>
 <?php endforeach; ?>
-    $sql = "<?php echo $this->_renderQuery($query); ?>";
+    $sql = "<?php echo $this->_renderQuery($query, array_keys($params)); ?>";
     $params = <?php echo $this->_renderQueryParams($query, array_keys($params)) ?>;
     return new \ClassQL\SqlString($sql, $params);
 }

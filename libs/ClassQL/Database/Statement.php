@@ -159,7 +159,7 @@ class Statement extends PDOStatement
             $row = $this->_dimensionizeRow($row);
             $this->_objectifyRow($row, $mapping, $all);
         }
-        return $all;
+        return array_values($all);
     }
     
     /**
@@ -174,6 +174,9 @@ class Statement extends PDOStatement
     {
         $dimensionized = array();
         foreach ($data as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
             $keyParts = explode($separator, $key);
             $column = array_pop($keyParts);
             $parent = &$dimensionized;
@@ -223,21 +226,38 @@ class Statement extends PDOStatement
         // mapped properties
         $props = isset($mapping['properties']) ? $mapping['properties'] : array();
         foreach ($composited as $prop => $data) {
-            if (!is_array($props[$prop])) {
-                $props[$prop] = array('classname' => $props[$prop]);
-            }
             if (!isset($props[$prop])) {
                 // no mapping info
                 $instance->$prop = $data;
-            } else if (isset($props[$prop]['array']) && $props[$prop]['array']) {
+                continue;
+            }
+            if (!is_array($props[$prop])) {
+                $props[$prop] = array('classname' => $props[$prop], 'array' => false);
+            }
+            if (isset($props[$prop]['array']) && $props[$prop]['array']) {
                 // property in an array of object
-                if (!isset($instance->$prop)) {
+                if (!isset($instance->$prop) || !is_array($instance->$prop)) {
                     $instance->$prop = array();
                 }
-                $this->_objectifyRow($data, $props[$prop], $instance->{$prop});
-            } else {
+                if ($data !== null) {
+                    $this->_objectifyRow($data, $props[$prop], $instance->$prop);
+                }
+            } else if ($data !== null) {
                 // property is a single object
                 $instance->$prop = $this->_objectifyRow($data, $props[$prop]);
+            } else {
+                $instance->$prop = null;
+            }
+        }
+        
+        // adding properties for rows with empty mapped properties
+        foreach ($props as $prop => $propInfo) {
+            if (!isset($instance->$prop)) {
+                if (isset($propInfo['array']) && $propInfo['array']) {
+                    $instance->$prop = array();
+                } else {
+                    $instance->$prop = null;
+                }
             }
         }
         

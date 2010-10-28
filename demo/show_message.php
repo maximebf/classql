@@ -10,4 +10,4 @@ if (empty($opts['id']) || ($message = Message::findWithUser($opts['id'])) === fa
     exit("Message not found\n");
 }
 
-echo "{$message->message} from {$message->user->email}\n";
+echo "{$message->message} to {$message->user->email}\n";

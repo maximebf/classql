@@ -177,14 +177,7 @@ class PHPGenerator extends AbstractGenerator
     protected function _getRenderedArgsItem($item, $varsInScope = array())
     {
         if ($item['type'] == 'variable') {
-            if ($item['value'] == '$this') {
-                return 'self::$tableName';
-            }
-            $varname = str_replace(array('[', ']'), array("['", "']"), $item['value']);
-            if (!in_array($this->_getCanonicalVarName($item['value']), $varsInScope)) {
-                return $this->_renderScope($this->_currentOperation['modifiers']) . substr($varname, 1);
-            }
-            return $varname;
+            return $this->_renderVar($item['value'], $varsInScope);
         }
         if ($item['type'] == 'array') {
             return $this->_renderArray($item['value'], $varsInScope);
@@ -193,7 +186,7 @@ class PHPGenerator extends AbstractGenerator
             return "'" . $this->_resolveClassName($item['value']) . "'";
         }
         if ($item['type'] == 'sql') {
-            return "new \\ClassQL\\SqlString(\"" . $this->_renderQuery($item['value']) 
+            return "new \\ClassQL\\SqlString(\"" . $this->_renderQuery($item['value'], $varsInScope) 
                  . "\", " . $this->_renderQueryParams($item['value'], $varsInScope) . ")";
         }
         if ($item['type'] == 'function') {
@@ -207,7 +200,7 @@ class PHPGenerator extends AbstractGenerator
      * @param array $varsToParameterized
      * @return string
      */
-    protected function _renderQuery($query)
+    protected function _renderQuery($query, $inScope)
     {
         $sql = str_replace('"', '\"', $query['sql']);
         foreach ($query['vars'] as $var) {
@@ -215,6 +208,8 @@ class PHPGenerator extends AbstractGenerator
                 $sql = str_replace('$this', '" . self::$tableName . "', $sql); 
             } else if (isset($query['inlines'][$var])) {
                 $sql = str_replace($var, "{{$var}->sql}", $sql);
+            } else if (substr($var, 0, 2) == '$$') {
+                $sql = str_replace($var, '" . ' . $this->_renderVar(substr($var, 1), $inScope) . ' . "', $sql);
             } else {
                 $sql = str_replace($var, '?', $sql);
             }
@@ -238,7 +233,7 @@ class PHPGenerator extends AbstractGenerator
                     $currentParams = array();
                 }
                 $params[] = "{$var}->params";
-            } else {
+            } else if (substr($var, 0, 2) != '$$') {
                 $varname = $this->_getCanonicalVarName($var);
                 $var = str_replace(array('[', ']'), array("['", "']"), $var);
                 if (in_array($varname, $inScope)) {
@@ -270,12 +265,15 @@ class PHPGenerator extends AbstractGenerator
     {
         if ($var === '$this') {
             $var = 'self::$tableName';
-        } else if ($varsInScope === true || ($varsInScope !== false && !in_array($var, $varsInScope))) {
-            if (in_array('static', $this->_currentOperation['modifiers'])) {
-                $var = "self::$var";
-            } else {
-                $var = '$this->' . substr($var, 1);
-            }
+        } else if (strpos($var, '::') !== false) {
+            $var = substr(str_replace('::', '::$', $var), 1);
+        } else if ($varsInScope === true || ($varsInScope !== false 
+            && !in_array($this->_getCanonicalVarName($var), $varsInScope))) {
+                if (in_array('static', $this->_currentOperation['modifiers'])) {
+                    $var = "self::$var";
+                } else {
+                    $var = '$this->' . substr($var, 1);
+                }
         }
         return str_replace(array('[', ']'), array("['", "']"), $var);
     }

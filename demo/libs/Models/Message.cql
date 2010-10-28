@@ -10,12 +10,19 @@ Message represents messages returns \Demo\Message {
     user_id integer;
     message text;
     
+    $selectColumns = messages.id, messages.user_id, messages.message;
+    $SELECT = SELECT $selectColumns;
+    
+    static find($id) : self {
+        $SELECT FROM $this WHERE id = $id
+    }
+    
     static findAllByUser($id) : self[] {
-        SELECT * FROM $this WHERE user_id = $id
+        $SELECT FROM $this WHERE user_id = $id
     }
     
     static findWithUser($id) : self + user:\Demo\User {
-        SELECT @columns(\Demo\Message), @with(\Demo\User, 'user')
+        $SELECT, @composite('user', $User::selectColumns)
         FROM $this JOIN users ON users.id = $this.user_id WHERE messages.id = $id
     }
     

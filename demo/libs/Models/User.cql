@@ -23,8 +23,7 @@ User represents users returns \Demo\User {
     }
     
     static findAllWithMessages() : self[] + messages:\Demo\Message[] {
-        $SELECT,
-            @composite('messages', 'messages.id, messages.user_id, messages.message')
+        $SELECT, @composite('messages', $Message::selectColumns)
         FROM $this
         LEFT JOIN messages ON messages.user_id = users.id
     }
