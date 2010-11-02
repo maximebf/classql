@@ -234,13 +234,7 @@ class PHPGenerator extends AbstractGenerator
                 }
                 $params[] = "{$var}->params";
             } else if (substr($var, 0, 2) != '$$') {
-                $varname = $this->_getCanonicalVarName($var);
-                $var = str_replace(array('[', ']'), array("['", "']"), $var);
-                if (in_array($varname, $inScope)) {
-                    $currentParams[] = $var;
-                } else if ($var !== '$this') {
-                    $currentParams[] = $this->_renderVar($var, $inScope);
-                }
+                $currentParams[] = $this->_renderVar($var, $inScope);
             }
         }
         
@@ -306,11 +300,11 @@ class PHPGenerator extends AbstractGenerator
         return $var;
     }
     
-    protected function _renderInlineFunc($function, $params = array())
+    protected function _renderInlineFunc($function, $varsInScope = array())
     {
         return sprintf('%s(%s)',
             $this->_getInlineFuncName($function['name']),
-            $this->_renderArgs($function['args'], array_keys($params))
+            $this->_renderArgs($function['args'], $varsInScope)
         );
     }
     

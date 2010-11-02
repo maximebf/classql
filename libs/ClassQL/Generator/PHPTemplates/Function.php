@@ -60,7 +60,7 @@ function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>
 function <?php echo $query_func_name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php foreach ($query['inlines'] as $inline): ?>
 <?php if ($inline['type'] == 'function'): ?>
-    <?php echo $inline['variable'] ?> =  new \ClassQL\SqlString(<?php echo $this->_renderInlineFunc($inline, $params) ?>);
+    <?php echo $inline['variable'] ?> =  new \ClassQL\SqlString(<?php echo $this->_renderInlineFunc($inline, array_keys($params)) ?>);
 <?php elseif ($inline['type'] == 'expression'): ?>
     <?php echo $inline['variable'] . ' = ' . $inline['expression'] ?>;
 <?php endif; ?>
