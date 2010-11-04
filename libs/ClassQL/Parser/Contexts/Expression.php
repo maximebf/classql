@@ -23,6 +23,9 @@ use ClassQL\Parser\CatchAllContext;
 
 class Expression extends CatchAllContext
 {
+    /** @var int */
+    protected $_parenthCount = 1;
+    
     public function tokenVariable($value)
     {
         $this->_value .= str_replace(array('[', ']'), array("['", "']"), $value);
@@ -33,8 +36,19 @@ class Expression extends CatchAllContext
         $this->_value .= $this->enterContext('RewriteArray');
     }
     
+    public function tokenParenthOpen()
+    {
+        $this->_parenthCount++;
+        $this->_value .= '(';
+    }
+    
     public function tokenParenthClose()
     {
+        if ($this->_parenthCount-- > 1) {
+            $this->_value .= ')';
+            return;
+        }
+        
         $this->exitContext($this->_value);
     }
 }
