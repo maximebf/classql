@@ -49,7 +49,7 @@ class InlineFunctions extends AliasResolver
     public static function switchArray($value, $array, $default = null)
     {
         if (isset($array[$value])) {
-            return $array['value'];
+            return $array[$value];
         }
         return $default;
     }
@@ -65,8 +65,10 @@ class InlineFunctions extends AliasResolver
                 $params = array_merge($params, $value->params);
             } else if (is_array($value) && !empty($value)) {
                 $sqlString = self::implode($separator, $value);
-                $parts[] = $sqlString->sql;
-                $params = array_merge($params, $sqlString->params);
+                if (!empty($sqlString->sql) && !empty($sqlString->params)) {
+                    $parts[] = $sqlString->sql;
+                    $params = array_merge($params, $sqlString->params);
+                }
             } else if (is_string($key)) {
                 $parts[] = "$key = ?";
                 $params[] = $value;
