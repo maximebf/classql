@@ -32,8 +32,8 @@ See a detailed example in the demo folder
         lastName text;
         
         // vars
-        fullName { firstName || ' ' || lastName }
-        SELECT { SELECT id, email, firstName, lastName, $fullName }
+        $fullName = firstName || ' ' || lastName;
+        $SELECT = SELECT id, email, firstName, lastName, $fullName;
         
         // by default, methods returns a collection of their defining class
         // the keyword $this will be replaced by the table name
