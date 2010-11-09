@@ -207,7 +207,11 @@ class PHPGenerator extends AbstractGenerator
             if ($var == '$this') {
                 $sql = str_replace('$this', '" . self::$tableName . "', $sql); 
             } else if (isset($query['inlines'][$var])) {
-                $sql = str_replace($var, "{{$var}->sql}", $sql);
+                if ($query['inlines'][$var]['type'] == 'function') {
+                    $sql = str_replace($var, "{{$var}->sql}", $sql);
+                } else {
+                    $sql = str_replace($var, '" . ' . $query['inlines'][$var]['expression'] . ' . "', $sql);
+                }
             } else if (substr($var, 0, 2) == '$$') {
                 $sql = str_replace($var, '" . ' . $this->_renderVar(substr($var, 1), $inScope) . ' . "', $sql);
             } else {
@@ -228,11 +232,13 @@ class PHPGenerator extends AbstractGenerator
         $currentParams = array();
         foreach ($query['vars'] as $var) {
             if (isset($query['inlines'][$var])) {
+                if ($query['inlines'][$var]['type'] == 'function') {
                 if (!empty($currentParams)) {
-                    $params[] = 'array(' . implode(', ', $currentParams) . ')';
-                    $currentParams = array();
+                        $params[] = 'array(' . implode(', ', $currentParams) . ')';
+                        $currentParams = array();
+                    }
+                    $params[] = "{$var}->params";
                 }
-                $params[] = "{$var}->params";
             } else if (substr($var, 0, 2) != '$$') {
                 $currentParams[] = $this->_renderVar($var, $inScope);
             }
