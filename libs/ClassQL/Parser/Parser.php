@@ -109,12 +109,9 @@ class Parser extends StringParser
         ), $model);
         
         foreach ($model['vars'] as &$var) {
-            if ($var['type'] !== 'sql') {
-                continue;
+            if ($var['type'] === 'sql') {
+                $var['value'] = $this->_replaceVars($var['value'], $model['vars']);
             }
-
-            $query = $this->_replaceVars($var['value'], $model['vars']);
-            $var['value'] = $query['sql'];
         }
         
         foreach ($model['methods'] as &$method) {
@@ -130,6 +127,12 @@ class Parser extends StringParser
                 if (isset($method['query'])) {
                     $method['query'] = $this->_replaceVars($method['query'], $model['vars']);
                 }
+            }
+        }
+    
+        foreach ($model['vars'] as &$var) {
+            if ($var['type'] === 'sql') {
+                $var['value'] = $var['value']['sql'];
             }
         }
     
@@ -192,7 +195,7 @@ class Parser extends StringParser
     protected function _replaceVars($query, $vars)
     {
         $sql = $query['sql'];
-        $queryVars = $query['vars'];
+        $queryVars = array();
         
         foreach ($query['vars'] as $var) {
             $varname = $var;
@@ -201,8 +204,10 @@ class Parser extends StringParser
             }
             
             if (isset($vars[$varname])) {
-                $sql = str_replace($var, $vars[$varname]['value'], $sql);
-                unset($queryVars[array_search($var, $queryVars)]);
+                $sql = str_replace($var, $vars[$varname]['value']['sql'], $sql);
+                $queryVars += $vars[$varname]['value']['vars'];
+            } else {
+                $queryVars[] = $var;
             }
         }
         

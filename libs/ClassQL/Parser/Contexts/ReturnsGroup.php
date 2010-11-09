@@ -38,7 +38,7 @@ class ReturnsGroup extends Context
     
     public function tokenString($value)
     {
-        if (in_array($value, array('update', 'value', 'last_insert_id'))) {
+        if (in_array($value, array('update', 'last_insert_id'))) {
             $this->_return = array('type' => $value);
         } else {
             $property = $value;
@@ -51,17 +51,24 @@ class ReturnsGroup extends Context
                 $this->getParser()->skipNext();
             }
             
-            $type = 'class';
+            $collection = false;
             if ($this->getParser()->isNextToken('arrayOpen')) {
-                $type = 'collection';
+                $collection = true;
                 $this->getParser()->skipUntil('arrayClose')->skipNext();
             }
             
-            $this->_return = array(
-                'type' => $type,
-                'value' => $value,
-                'property' => $property
-            );
+            if ($value === 'value') {
+                $this->_return = array(
+                    'type' => $collection ? 'value_collection' : 'value',
+                    'property' => $property
+                );
+            } else {
+                $this->_return = array(
+                    'type' => $collection ? 'collection' : 'class',
+                    'value' => $value,
+                    'property' => $property
+                );
+            }
         }
     }
     

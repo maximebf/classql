@@ -20,6 +20,8 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
     $stmt->closeCursor();
 <?php elseif ($query['returns']['type'] == 'value'): ?>
     $data = $stmt->fetchColumn();
+<?php elseif ($query['returns']['type'] == 'value_collection'): ?>
+    $data = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
 <?php elseif ($query['returns']['type'] == 'last_insert_id'): ?>
     $this->id = \ClassQL\Session::getConnection()->lastInsertId();
 <?php elseif ($query['returns']['type'] == 'update'): ?>
@@ -34,7 +36,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php else: ?>
     $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
 <?php endif; ?>
-<?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'class', 'collection'))):?>
+<?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'value_collection', 'class', 'collection'))):?>
     return $data;
 <?php endif; ?>
 }
