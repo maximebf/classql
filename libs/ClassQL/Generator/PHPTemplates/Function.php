@@ -10,16 +10,21 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php if (isset($query)): ?>
     $stmt = <?php echo $this->_renderScope($modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 <?php if ($query['returns']['type'] != 'null'): ?>
+<?php foreach ($this->_getMappedColumnTypes() as $column => $type): ?>
+    $stmt->setColumnType('<?php echo $column ?>', '<?php echo $type ?>');
+<?php endforeach; ?>
 <?php if (isset($query['returns']['with'])): ?>
-    $data = $stmt->fetch<?php if ($query['returns']['type'] == 'collection') echo 'All' ?>Composite('<?php echo $query['returns']['value'] ?>', <?php echo $this->_renderMappingInfo($query['returns']) ?>);
+    $data = $stmt->fetch<?php if ($query['returns']['type'] == 'collection') echo 'All' ?>Composite('<?php 
+                echo $query['returns']['value'] ?>', <?php echo $this->_renderMappingInfo($query['returns']) ?>, <?php echo $this->_hasMappedColumns() ? 'true' : 'false' ?>);
 <?php elseif ($query['returns']['type'] == 'collection'): ?>
-    $data = $stmt->fetchAll(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
+    $data = $stmt->fetchAll(\PDO::FETCH_CLASS<?php echo $this->_hasMappedColumns() ? ' | \ClassQL\Database\Connection::FETCH_TYPED' : '' ?>, '<?php echo $query['returns']['value'] ?>');
 <?php elseif ($query['returns']['type'] == 'class'): ?>
-    $stmt->setFetchMode(\PDO::FETCH_CLASS, '<?php echo $query['returns']['value'] ?>');
+    $stmt->setFetchMode(\PDO::FETCH_CLASS<?php echo $this->_hasMappedColumns() ? ' | \ClassQL\Database\Connection::FETCH_TYPED' : '' ?>, '<?php echo $query['returns']['value'] ?>');
     $data = $stmt->fetch();
     $stmt->closeCursor();
 <?php elseif ($query['returns']['type'] == 'value'): ?>
     $data = $stmt->fetchColumn();
+    $stmt->closeCursor();
 <?php elseif ($query['returns']['type'] == 'value_collection'): ?>
     $data = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
 <?php elseif ($query['returns']['type'] == 'last_insert_id'): ?>

@@ -19,6 +19,8 @@
  
 namespace ClassQL\Database;
 
+use ClassQL\Exception;
+
 use \PDO,
     \PDOStatement, 
     \PDOException;
@@ -32,13 +34,19 @@ class Statement extends PDOStatement
     protected $_profiler;
     
     /** @var array */
+    protected $_types = array();
+    
+    /** @var array */
     protected $_fetchedCompositedRows;
     
     /** @var int */
     protected $_fetchMode;
     
     /** @var array */
-    protected $_fetchCompositeInfo;
+    protected $_fetchInfo;
+    
+    /** @var bool */
+    protected $_applyTypeMapping = false;
     
     /**
      * @param Profiler $profiler
@@ -49,15 +57,47 @@ class Statement extends PDOStatement
     }
     
     /**
+     * Associates a type to a column
+     * 
+     * @param string $columnName
+     * @param object|string $typeName
+     */
+    public function setColumnType($columnName, $typeName)
+    {
+        if (!is_subclass_of($typeName, '\ClassQL\Database\Type')) {
+            throw new Exception("Column type must be of type '\ClassQL\Database\Type'");
+        }
+        $this->_types[$columnName] = $typeName;
+    }
+    
+    /**
+     * Disassociates a type and a column
+     * 
+     * @param string $columnName
+     */
+    public function unsetColumnType($columnName)
+    {
+        if (isset($this->_types[$columnName])) {
+            unset($this->_types[$columnName]);
+        }
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public function setFetchMode($mode)
     {
         $args = func_get_args();
         $this->_fetchMode = $mode;
+        
+        if ($mode & Connection::FETCH_TYPED === Connection::FETCH_TYPED) {
+            $this->_applyTypeMapping = true;
+            $args[0] = $mode = $mode & ~Connection::FETCH_TYPED;
+        }
+        
         if ($mode === Connection::FETCH_COMPOSITE) {
             array_shift($args);
-            $this->_fetchCompositeInfo = $args;
+            $this->_fetchInfo = $args;
         } else {
             call_user_func_array('parent::setFetchMode', $args);
         }
@@ -77,10 +117,24 @@ class Statement extends PDOStatement
     public function fetch()
     {
         $args = func_get_args();
-        if ($this->_fetchMode === Connection::FETCH_COMPOSITE) {
-            return call_user_func_array(array($this, 'fetchComposite'), $this->_fetchCompositeInfo);
+        $fetchMode = isset($args[0]) ? $args[0] : $this->_fetchMode;
+        $applyTypeMapping = false;
+        if (($fetchMode & Connection::FETCH_TYPED) === Connection::FETCH_TYPED) {
+            $applyTypeMapping = true;
+            $args[0] = $fetchMode = $fetchMode & ~Connection::FETCH_TYPED;
         }
-        return call_user_func_array('parent::fetch', $args);
+        
+        if ($fetchMode === Connection::FETCH_COMPOSITE) {
+            $args = $this->_fetchInfo;
+            $args[] = $applyTypeMapping;
+            return call_user_func_array(array($this, 'fetchComposite'), $args);
+        }
+        
+        $data = call_user_func_array('parent::fetch', $args);
+        if ($applyTypeMapping) {
+            return $this->applyColumnsTypeMapping($data);
+        }
+        return $data;
     }
     
     /**
@@ -89,10 +143,24 @@ class Statement extends PDOStatement
     public function fetchAll()
     {
         $args = func_get_args();
-        if ($this->_fetchMode === Connection::FETCH_COMPOSITE) {
-            return call_user_func_array(array($this, 'fetchAllComposite'), $this->_fetchCompositeInfo);
+        $fetchMode = isset($args[0]) ? $args[0] : $this->_fetchMode;
+        $applyTypeMapping = false;
+        if (($fetchMode & Connection::FETCH_TYPED) === Connection::FETCH_TYPED) {
+            $applyTypeMapping = true;
+            $args[0] = $fetchMode = $fetchMode & ~Connection::FETCH_TYPED;
         }
-        return call_user_func_array('parent::fetchAll', $args);
+        
+        if ($fetchMode === Connection::FETCH_COMPOSITE) {
+            $args = $this->_fetchInfo;
+            $args[] = $applyTypeMapping;
+            return call_user_func_array(array($this, 'fetchAllComposite'), $args);
+        }
+        
+        $data = call_user_func_array('parent::fetchAll', $args);
+        if ($applyTypeMapping) {
+            return array_map(array($this, 'applyColumnsTypeMapping'), $data);
+        }
+        return $data;
     }
     
     /**
@@ -118,6 +186,26 @@ class Statement extends PDOStatement
     }
     
     /**
+     * Filters the data (array of object) according to the column/type mapping
+     * defined using the {@see setColumnType()} method.
+     * 
+     * @param array|object $data
+     * @return array|object
+     */
+    public function applyColumnsTypeMapping($data)
+    {
+        foreach ($this->_types as $column => $type) {
+            $callback = array($type, 'filterInput');
+            if (is_array($data) && isset($data[$column])) {
+                $data[$column] = call_user_func($callback, $data[$column], $data);
+            } else if (isset($data->$column)) {
+                $data->$column = call_user_func($callback, $data->$column, $data);
+            }
+        }
+        return $data;
+    }
+    
+    /**
      * Fetches the next row using the composite fetch mode
      * 
      * Note: this will use {@see fetchAllComposite} and then keep
@@ -128,10 +216,10 @@ class Statement extends PDOStatement
      * @param array $mapping
      * @return object
      */
-    public function fetchComposite($className = null, $mapping = array())
+    public function fetchComposite($className = null, $mapping = array(), $applyTypes = false)
     {
         if ($this->_fetchedCompositedRows === null) {
-            $this->_fetchedCompositedRows = $this->fetchAllComposite($className, $mapping);
+            $this->_fetchedCompositedRows = $this->fetchAllComposite($className, $mapping, $applyTypes);
         }
         return array_shift($this->_fetchedCompositedRows) ?: false;
     }
@@ -143,10 +231,13 @@ class Statement extends PDOStatement
      * @param array $mapping
      * @return array
      */
-    public function fetchAllComposite($className, $mapping = array())
+    public function fetchAllComposite($className, $mapping = array(), $applyTypes = false)
     {
         if (($rows = $this->fetchAll(PDO::FETCH_ASSOC)) === false) {
             return false;
+        }
+        if ($applyTypes) {
+            $rows = array_map(array($this, 'applyColumnsTypeMapping'), $rows);
         }
         
         $all = array();

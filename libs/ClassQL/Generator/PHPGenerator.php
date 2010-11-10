@@ -19,7 +19,8 @@
  
 namespace ClassQL\Generator;
 
-use ClassQL\InlineFunctions;
+use ClassQL\InlineFunctions,
+    ClassQL\Database\Type;
 
 class PHPGenerator extends AbstractGenerator
 {
@@ -342,5 +343,26 @@ class PHPGenerator extends AbstractGenerator
             return '\\' . trim($this->_currentNamespace, '\\') . '\\' . $identifier;
         }
         return $identifier;
+    }
+    
+    protected function _getMappedColumnTypes()
+    {
+        $types = array();
+        foreach ($this->_currentClass['columns'] as $column) {
+            if (Type::hasType($column['type'])) {
+                $types[$column['name']] = Type::getTypeClassName($column['type']);
+            }
+        }
+        return $types;
+    }
+    
+    protected function _hasMappedColumns()
+    {
+        foreach ($this->_currentClass['columns'] as $column) {
+            if (Type::hasType($column['type'])) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -27,7 +27,9 @@ use \PDO,
  */
 class Connection extends PDO
 {
-    const FETCH_COMPOSITE = 9999999;
+    const FETCH_COMPOSITE = 20;
+    
+    const FETCH_TYPED = 200000;
     
     /** @var bool */
     protected $_nestedTransactions = true;
