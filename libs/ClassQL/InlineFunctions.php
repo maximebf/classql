@@ -64,7 +64,7 @@ class InlineFunctions extends AliasResolver
                 $params = array_merge($params, $value->params);
             } else if (is_array($value) && !empty($value)) {
                 $sqlString = self::implode($separator, $value);
-                if (!empty($sqlString->sql) && !empty($sqlString->params)) {
+                if (!empty($sqlString->sql) || !empty($sqlString->params)) {
                     $parts[] = $sqlString->sql;
                     $params = array_merge($params, $sqlString->params);
                 }
