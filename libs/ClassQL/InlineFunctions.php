@@ -30,12 +30,11 @@ class InlineFunctions extends AliasResolver
         'or' => '\ClassQL\InlineFunctions::_or',
         'set' => '\ClassQL\InlineFunctions::set',
         'where' => '\ClassQL\InlineFunctions::where',
-        'insert' => '\ClassQL\InlineFunctions::insert',
-        'update' => '\ClassQL\InlineFunctions::update',
-        'delete' => '\ClassQL\InlineFunctions::delete',
         'composite' => '\ClassQL\InlineFunctions::composite',
         'with' => '\ClassQL\InlineFunctions::with',
-        'columns' => '\ClassQL\InlineFunctions::columns'
+        'columns' => '\ClassQL\InlineFunctions::columns',
+        'insert' => '\ClassQL\InlineFunctions::insert',
+        'update' => '\ClassQL\InlineFunctions::update'
     );
     
     public static function test($expression, $true, $false = null)
@@ -140,5 +139,20 @@ class InlineFunctions extends AliasResolver
         return implode(', ', array_map(function($column) use ($tableName) {
             return "$tableName.$column";
         }, $className::$columns));
+    }
+    
+    public static function insert($tableName, $data)
+    {
+        $sql = sprintf("INSERT INTO $tableName (%s) VALUES(%s)",
+            implode(', ', array_keys($data)), 
+            implode(', ', array_fill(0, count($data), '?'))
+        );
+        return new SqlString($sql, array_values($data));
+    }
+    
+    public function update($tableName, $data)
+    {
+        $sql = "UPDATE $tableName SET " . implode(' = ?, ', array_keys($data)) . " = ?";
+        return new SqlString($sql, array_values($data));
     }
 }

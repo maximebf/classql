@@ -45,9 +45,6 @@ class Statement extends PDOStatement
     /** @var array */
     protected $_fetchInfo;
     
-    /** @var bool */
-    protected $_applyTypeMapping = false;
-    
     /**
      * @param Profiler $profiler
      */
@@ -90,8 +87,7 @@ class Statement extends PDOStatement
         $args = func_get_args();
         $this->_fetchMode = $mode;
         
-        if ($mode & Connection::FETCH_TYPED === Connection::FETCH_TYPED) {
-            $this->_applyTypeMapping = true;
+        if (($mode & Connection::FETCH_TYPED) === Connection::FETCH_TYPED) {
             $args[0] = $mode = $mode & ~Connection::FETCH_TYPED;
         }
         
