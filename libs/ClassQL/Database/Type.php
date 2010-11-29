@@ -29,6 +29,7 @@ abstract class Type
     private static $_registeredTypes = array(
         'bool' => '\ClassQL\Database\Types\Bool',
         'pgbool' => '\ClassQL\Database\Types\PgBool',
+        'pgarray' => '\ClassQL\Database\Types\PgArray',
         'serialized' => '\ClassQL\Database\Types\Serialized'
     );
     
