@@ -42,6 +42,12 @@ class <?php echo $name;
 <?php endforeach; ?>
 
 <?php foreach ($methods as $method): ?>
+<?php if ($this->_hasAttribute($method['attributes'], 'CachedProperty')): ?>
+    protected <?php if (in_array('static', $method['modifiers'])) echo 'static'; ?> $<?php echo $method['name'] ?>Cache;
+<?php endif; ?>
+<?php endforeach; ?>
+
+<?php foreach ($methods as $method): ?>
     <?php echo $method['php']; ?>
     
 <?php endforeach; ?>

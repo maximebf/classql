@@ -108,6 +108,47 @@ class Statement extends PDOStatement
     }
     
     /**
+     * Binds an array of values
+     * 
+     * Two possibilities:
+     *  - param => value
+     *  - param => array(value, type)
+     * 
+     * @param array $values
+     */
+    public function bindValues(array $values) {
+        foreach ($values as $param => $value) {
+            $type = PDO::PARAM_STR;
+            if (is_array($value)) {
+                list($value, $type) = $value;
+            }
+            $this->bindValue($param, $value, $type);
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function execute($params = array())
+    {
+        $this->_profiler !== null && $this->_profiler->startQuery($this->queryString, $params);
+    
+        try {
+            $success = parent::execute($params);
+        } catch (PDOException $e) {
+            $this->_profiler !== null && $this->_profiler->stopQuery($e);
+            throw $e;
+        }
+    
+        $this->_profiler !== null && $this->_profiler->stopQuery();
+        
+        if ($success) {
+            return $this;
+        }
+        return false;
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public function fetch()
@@ -157,28 +198,6 @@ class Statement extends PDOStatement
             return array_map(array($this, 'applyColumnsTypeMapping'), $data);
         }
         return $data;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function execute($params = array())
-    {
-        $this->_profiler !== null && $this->_profiler->startQuery($this->queryString, $params);
-    
-        try {
-            $success = parent::execute($params);
-        } catch (PDOException $e) {
-            $this->_profiler !== null && $this->_profiler->stopQuery($e);
-            throw $e;
-        }
-    
-        $this->_profiler !== null && $this->_profiler->stopQuery();
-        
-        if ($success) {
-            return $this;
-        }
-        return false;
     }
     
     /**
@@ -322,7 +341,7 @@ class Statement extends PDOStatement
                 $props[$prop] = array('classname' => $props[$prop], 'array' => false);
             }
             if (isset($props[$prop]['array']) && $props[$prop]['array']) {
-                // property in an array of object
+                // property is an array of object
                 if (!isset($instance->$prop) || !is_array($instance->$prop)) {
                     $instance->$prop = array();
                 }

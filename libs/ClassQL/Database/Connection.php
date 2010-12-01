@@ -20,7 +20,10 @@
 namespace ClassQL\Database;
 
 use \PDO,
-    \PDOException;
+    \PDOException,
+    \ClassQL\SqlString,
+    \ClassQL\Session,
+    \ClassQL\Cache\Cache;
 
 /**
  * Thin wrapper around PDO
@@ -39,6 +42,9 @@ class Connection extends PDO
     
     /** @var Profiler */
     protected $_profiler;
+    
+    /** @var Cache */
+    protected $_cache;
     
     /**
      * {@inheritDoc}
@@ -202,6 +208,67 @@ class Connection extends PDO
     
         $this->_profiler !== null && $this->_profiler->stopQuery();
         return $returns;
+    }
+    
+    /**
+     * @param Cache $cache
+     */
+    public function setCache(Cache $cache)
+    {
+        $this->_cache = $cache;
+    }
+    
+    /**
+     * @return Cache
+     */
+    public function getCache()
+    {
+        if ($this->_cache === null) {
+            $this->_cache = Session::getCache();
+        }
+        return $this->_cache;
+    }
+    
+    /**
+     * Returns a cache id generated from an sql string and some parameters
+     * 
+     * @param string|\ClassQL\SqlString $query
+     * @param array $params
+     * @return string
+     */
+    public function cacheId($query, $params = array())
+    {
+        if ($query instanceof SqlString) {
+            $param = $query->params;
+            $query = $query->sql;
+        }
+        return md5($query . serialize($params));
+    }
+    
+    /**
+     * Executes the closure unless a cache entry with
+     * the specified id exists. The closure must return
+     * the data to store in the cache. 
+     * 
+     * Returns the result of the closure of the cached
+     * data.
+     * 
+     * The closure will take the current connection object
+     * as first parameter.
+     * 
+     * @param string $id
+     * @param Closure $callback
+     * @return mixed
+     */
+    public function cached($id, \Closure $callback)
+    {
+        if ($this->getCache()->has($id)) {
+            return $this->getCache()->get($id);
+        }
+        
+        $data = $callback($this);
+        $this->getCache()->set($id, $data);
+        return $data;
     }
     
     /**

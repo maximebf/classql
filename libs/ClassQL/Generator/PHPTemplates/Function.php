@@ -7,9 +7,26 @@
 <?php endif; ?>
 <?php echo $this->_renderModifiers($modifiers); ?>
 function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
+<?php if ($this->_hasAttribute($attributes, 'CachedProperty')): ?>
+    if (<?php echo $this->_renderVar("\${$name}Cache", true) ?> === null) {
+<?php endif; ?>
+<?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
+    $__cacheId = \ClassQL\Session::getConnection()->cacheId(__CLASS__ . __METHOD__, func_get_args());
+    if (\ClassQL\Session::getConnection()->getCache()->has($__cacheId)) {
+<?php if ($this->_hasAttribute($attributes, 'CachedProperty')): ?>
+        <?php echo $this->_renderVar("\${$name}Cache", true) ?> = \ClassQL\Session::getCache()->get($__cacheId);
+        return <?php echo $this->_renderVar("\${$name}Cache", true) ?>;
+<?php else: ?>
+        return \ClassQL\Session::getConnection()->getCache()->get($__cacheId);
+<?php endif; ?>
+    }
+<?php endif; ?>
 <?php if (isset($query)): ?>
     $stmt = <?php echo $this->_renderScope($modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
-<?php if ($query['returns']['type'] != 'null'): ?>
+<?php if ($this->_hasAttribute($attributes, 'IdentityOnly')): ?>
+    $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+    $data = array_map('<?php echo $this->_getIdentityResolver() ?>', $ids);
+<?php elseif ($query['returns']['type'] != 'null'): ?>
 <?php foreach ($this->_getMappedColumnTypes() as $column => $type): ?>
     $stmt->setColumnType('<?php echo $column ?>', '<?php echo $type ?>');
 <?php endforeach; ?>
@@ -41,8 +58,24 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
 <?php else: ?>
     $data = <?php echo $callback['name'] ?>(<?php echo $this->_renderArgs($callback['args'], array_keys($params)) ?>);
 <?php endif; ?>
+<?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
+    \ClassQL\Session::getConnection()->getCache()->set($__cacheId, $data);
+<?php endif; ?>
+<?php if ($this->_hasAttribute($attributes, 'InvalidateCache')): ?>
+<?php $attr = $this->_getAttributeArgs($attributes, 'InvalidateCache') ?>
+    $__cacheId = \ClassQL\Session::getConnection()->cacheId(__CLASS__ . <?php echo $attr[0]['value'] ?>, array(<?php echo $this->_renderVar($attr[1]['value'], true) ?>));
+    if (\ClassQL\Session::getConnection()->getCache()->has($__cacheId)) {
+        \ClassQL\Session::getConnection()->getCache()->delete($__cacheId);
+    }
+<?php endif; ?>
 <?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'value_collection', 'class', 'collection'))):?>
+<?php if ($this->_hasAttribute($attributes, 'CachedProperty')): ?>
+    <?php echo $this->_renderVar("\${$name}Cache", true) ?> = $data;
+    }
+    return <?php echo $this->_renderVar("\${$name}Cache", true) ?>;
+<?php else: ?>
     return $data;
+<?php endif; ?>
 <?php endif; ?>
 }
 <?php if (isset($query)): ?>
