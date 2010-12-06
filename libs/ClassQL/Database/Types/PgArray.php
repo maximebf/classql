@@ -28,7 +28,7 @@ class PgArray extends Type
 {
     public static function filterInput($value, $source)
     {
-        return array_map(function($v) { return trim($v, ' "'); }, explode(',', trim($value, '{}')));
+        return array_map(function($v) { return trim($v, ' "'); }, explode(',', trim($value, '{}()')));
     }
     
     public static function getSqlTypeDef()
