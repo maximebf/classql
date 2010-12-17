@@ -131,7 +131,7 @@ class Connection extends PDO
      * @param Closure $closure
      * @return mixed
      */
-    public function transaction(Closure $closure)
+    public function transaction(\Closure $closure)
     {
         $this->beginTransaction();
         try {
