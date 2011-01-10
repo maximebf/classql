@@ -24,7 +24,7 @@ class <?php echo $name;
     /**
      * @var string
      */
-    public static $<?php echo substr($var['name'], 1) ?> = '<?php echo str_replace("'", "\'", $var['value']) ?>';
+    public static $<?php echo substr($var['name'], 1) ?> = '<?php echo str_replace("'", "\'", $var['value']['sql']) ?>';
 <?php else: ?>
     /**
      * @var array
