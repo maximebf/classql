@@ -114,10 +114,10 @@ class InlineFunctions extends AliasResolver
         }
         
         foreach ($columns as &$column) {
-            $parts = array_map('trim', explode(' as ', $column));
-            $columnName = array_shift($parts);
-            if (count($parts) > 0) {
-                $alias = array_pop($parts);
+            $columnName = $column;
+            if ($as = strrpos($column, 'as')) {
+                $columnName = trim(substr($column, 0, $as));
+                $alias = trim(substr($column, $as + 2));
             } else {
                 $columnParts = explode('.', $columnName);
                 $alias = array_pop($columnParts);
