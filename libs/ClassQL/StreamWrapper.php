@@ -44,9 +44,6 @@ class StreamWrapper
     }
     
     /**
-     * Subclass should implement this method to open the file and fill
-     * the $content property
-     * 
      * @param string $filename
      * @param string $mode
      * @param int $options

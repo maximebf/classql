@@ -51,6 +51,7 @@ final class Session
      *  cache: a Cache instance
      *  parser: a Parser instance
      *  generator: a Generator instance
+     *  profiler: a Profiler instance
      *  streamcache: the path where to cache generated files (false to disabled)
      *  
      * All keys are optional apart for either the connection or the dsn ones

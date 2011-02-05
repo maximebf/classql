@@ -54,7 +54,7 @@ class Connection extends PDO
     /**
      * @param Profiler $profiler
      */
-    public function setProfiler(Profiler $profiler)
+    public function setProfiler(Profiler $profiler = null)
     {
         $this->_profiler = $profiler;
         $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, 

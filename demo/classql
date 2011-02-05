@@ -1,5 +1,0 @@
-#!/usr/bin/env php
-<?php
-
-require_once __DIR__ . '/bootstrap.php';
-ClassQL\CLI::run(array_slice($_SERVER['argv'], 1));

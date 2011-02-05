@@ -240,7 +240,7 @@ class PHPGenerator extends AbstractGenerator
                     }
                     $params[] = "{$var}->params";
                 }
-            } else if (substr($var, 0, 2) != '$$') {
+            } else if ($var != '$this' && substr($var, 0, 2) != '$$') {
                 $currentParams[] = $this->_renderVar($var, $inScope);
             }
         }

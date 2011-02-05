@@ -36,21 +36,24 @@ class CLI
      * 
      * @param array $args
      */
-    public static function run(array $args = array())
+    public static function run(array $argv = null)
     {
+        $argv = $argv ?: array_slice($_SERVER['argv'], 1);
+        $args = array();
         $options = array();
-        foreach ($args as $arg) {
+        foreach ($argv as $arg) {
             if (substr($arg, 0, 2) === '--') {
                 $key = substr($arg, 2);
-                $value = null;
+                $value = true;
                 if (($sep = strpos($arg, '=')) !== false) {
-                    $key = substr($arg, 0, $sep);
+                    $key = substr($arg, 2, $sep - 2);
                     $value = substr($arg, $sep + 1);
                 }
                 $options[$key] = $value;
+            } else {
+                $args[] = $arg;
             }
         }
-        $args = array_slice($args, count($options));
         
         if (!count($args)) {
             throw new Exception("Missing command name");

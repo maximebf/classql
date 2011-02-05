@@ -6,4 +6,4 @@ ClassQL\Loader::register('Parsec', __DIR__ . '/vendor/parsec/libs/Parsec');
 ClassQL\Loader::register('ClassQL', __DIR__ . '/libs/ClassQL');
 
 ClassQL\Session::start();
-ClassQL\CLI::run(array_slice($_SERVER['argv'], 1));
+ClassQL\CLI::run();
