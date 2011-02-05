@@ -130,12 +130,6 @@ class Parser extends StringParser
             }
         }
     
-        foreach ($model['vars'] as &$var) {
-            if ($var['type'] === 'sql') {
-                $var['value'] = $var['value']['sql'];
-            }
-        }
-    
         return $model;
     }
     
@@ -205,7 +199,7 @@ class Parser extends StringParser
             
             if (isset($vars[$varname])) {
                 $sql = str_replace($var, $vars[$varname]['value']['sql'], $sql);
-                $queryVars += $vars[$varname]['value']['vars'];
+                $queryVars = array_merge($queryVars, $vars[$varname]['value']['vars']);
             } else {
                 $queryVars[] = $var;
             }

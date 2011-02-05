@@ -24,7 +24,7 @@ class <?php echo $name;
     /**
      * @var string
      */
-    public static $<?php echo substr($var['name'], 1) ?> = '<?php echo str_replace("'", "\'", $var['value']) ?>';
+    public static $<?php echo substr($var['name'], 1) ?> = '<?php echo str_replace("'", "\'", $var['value']['sql']) ?>';
 <?php else: ?>
     /**
      * @var array
@@ -39,6 +39,12 @@ class <?php echo $name;
      */
     public $<?php echo $column['name'] ?>;
     
+<?php endforeach; ?>
+
+<?php foreach ($methods as $method): ?>
+<?php if ($this->_hasAttribute($method['attributes'], 'CachedProperty')): ?>
+    protected <?php if (in_array('static', $method['modifiers'])) echo 'static'; ?> $<?php echo $method['name'] ?>Cache;
+<?php endif; ?>
 <?php endforeach; ?>
 
 <?php foreach ($methods as $method): ?>

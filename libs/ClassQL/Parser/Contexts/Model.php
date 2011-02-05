@@ -54,7 +54,8 @@ class Model extends ContainerContext
             'name' => $this->_nextName,
             'type' => $value,
             'sql' => trim($this->_nextName . ' ' . $value . $this->enterContext('Line')),
-            'docComment' => $this->_latestDocComment
+            'docComment' => $this->_latestDocComment, 
+            'attributes' => $this->_latestAttributes
         );
         
         $this->_nextName = null;

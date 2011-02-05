@@ -1,0 +1,16 @@
+{
+    "title": "ClassQL",
+    "home": "./en/01_intro.md",
+    "files": [
+        "en/01_intro.md",
+        "en/02_setup.md",
+        "en/03_syntax.md",
+        "en/04_functions.md",
+        "en/05_classes.md",
+        "en/06_inline_functions.md",
+        "en/07_caching.md",
+        "en/08_dbal.md",
+        "en/09_cli.md",
+        "en/10_return_types.md"
+    ]
+}

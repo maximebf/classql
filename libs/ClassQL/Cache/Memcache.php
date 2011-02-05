@@ -77,7 +77,7 @@ class Memcache implements Cache
      */
     public function set($key, $content)
     {
-        return $this->_memcache->set($key, $filename);
+        return $this->_memcache->set($key, $content);
     }
     
     /**

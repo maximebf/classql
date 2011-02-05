@@ -20,7 +20,8 @@
 namespace ClassQL\Generator;
 
 use ClassQL\InlineFunctions,
-    ClassQL\Database\Type;
+    ClassQL\Database\Type,
+    ClassQL\Exception;
 
 class PHPGenerator extends AbstractGenerator
 {
@@ -364,5 +365,35 @@ class PHPGenerator extends AbstractGenerator
             }
         }
         return false;
+    }
+    
+    protected function _hasAttribute($attributes, $name) {
+        foreach ($attributes as $attr) {
+            if ($attr['name'] == $name) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    protected function _getAttributeArgs($attributes, $name) {
+        foreach ($attributes as $attr) {
+            if ($attr['name'] == $name) {
+                return $attr['args'];
+            }
+        }
+        return array();
+    }
+    
+    protected function _getIdentityResolver() {
+        foreach ($this->_currentClass['methods'] as $method) {
+            if ($this->_hasAttribute($method['attributes'], 'IdentityResolver')) {
+                if (!in_array('static', $method['modifiers'])) {
+                    throw new Exception('Only static method can be identity resolvers');
+                }
+                return 'self::' . $method['name'];
+            }
+        }
+        throw new Exception('No identity resolvers registered for this class');
     }
 }
