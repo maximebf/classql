@@ -115,7 +115,7 @@ class InlineFunctions extends AliasResolver
         
         foreach ($columns as &$column) {
             $columnName = $column;
-            if ($as = strrpos($column, 'as')) {
+            if ($as = strrpos($column, ' as ')) {
                 $columnName = trim(substr($column, 0, $as));
                 $alias = trim(substr($column, $as + 2));
             } else {
