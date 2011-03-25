@@ -53,7 +53,7 @@ class InlineFunctions extends AliasResolver
         return $default;
     }
     
-    public static function implode($separator, $array)
+    public static function implode($separator, $array, $escaped = false)
     {
         $parts = array();
         $params = array();
@@ -71,6 +71,9 @@ class InlineFunctions extends AliasResolver
             } else if (is_string($key)) {
                 $parts[] = "$key = ?";
                 $params[] = $value;
+            } else if ($escaped) {
+                $parts[] = '?';
+                $params[] = (string) $value;
             } else if (!empty($value)) {
                 $parts[] = (string) $value;
             }
@@ -156,3 +159,4 @@ class InlineFunctions extends AliasResolver
         return new SqlString($sql, array_values($data));
     }
 }
+
