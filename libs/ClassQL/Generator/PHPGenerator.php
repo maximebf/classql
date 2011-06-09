@@ -384,6 +384,27 @@ class PHPGenerator extends AbstractGenerator
         }
         return array();
     }
+
+    protected function _renderCacheIdArgs() {
+        if (!$this->_hasAttribute($this->_currentOperation['attributes'], 'CacheId')) {
+            return "__CLASS__, __METHOD__, func_get_args()";
+        }
+
+        $args = $this->_getAttributeArgs($this->_currentOperation['attributes'], 'CacheId');
+        if (count($args) == 0) {
+            throw new Exception("Missing argument for CacheId attribute");
+        }/* else if ($args[0]['type'] != 'scalar') {
+            throw new Exception("Wrong argument type for CacheId attribute");
+        }*/
+
+        return $this->_renderArgs($args, array_keys($this->_currentOperation['params']));
+
+        return str_replace(
+            array('$__CLASS__', '$__METHOD__'), 
+            array('" . __CLASS__ . "', '" . __METHOD__ . "'), 
+            $args[0]['value']
+        );
+    }
     
     protected function _getIdentityResolver() {
         foreach ($this->_currentClass['methods'] as $method) {
@@ -391,7 +412,7 @@ class PHPGenerator extends AbstractGenerator
                 if (!in_array('static', $method['modifiers'])) {
                     throw new Exception('Only static method can be identity resolvers');
                 }
-                return 'self::' . $method['name'];
+                return $this->_resolveClassName($this->_currentClass['name']) . '::' . $method['name'];
             }
         }
         throw new Exception('No identity resolvers registered for this class');

@@ -11,7 +11,7 @@ function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
     if (<?php echo $this->_renderVar("\${$name}Cache", true) ?> === null) {
 <?php endif; ?>
 <?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
-    $__cacheId = \ClassQL\Session::getConnection()->cacheId(__CLASS__ . __METHOD__, func_get_args());
+    $__cacheId = \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs() ?>);
     if (\ClassQL\Session::getConnection()->getCache()->has($__cacheId)) {
 <?php if ($this->_hasAttribute($attributes, 'CachedProperty')): ?>
         <?php echo $this->_renderVar("\${$name}Cache", true) ?> = \ClassQL\Session::getCache()->get($__cacheId);

@@ -236,13 +236,16 @@ class Connection extends PDO
      * @param array $params
      * @return string
      */
-    public function cacheId($query, $params = array())
+    public function cacheId()
     {
-        if ($query instanceof SqlString) {
-            $param = $query->params;
-            $query = $query->sql;
+        $segments = array();
+        foreach (func_get_args() as $arg) {
+            if (!is_string($arg)) {
+                $arg = md5(serialize($arg));
+            }
+            $segments[] = (string) $arg;
         }
-        return md5($query . serialize($params));
+        return implode(':', $segments);
     }
     
     /**
