@@ -71,17 +71,16 @@
         \ClassQL\Session::getConnection()->getCache()->set($__cacheId, $data);
     <?php endif; ?>
 
-    <?php if ($this->_hasAttribute($attributes, 'InvalidateCache') || $this->_hasAttribute($attributes, 'InvalidateIdentity')): ?>
-        <?php if ($this->_hasAttribute($attributes, 'InvalidateIdentity')): ?>
-            <?php $identityResolver = $this->_getIdentityResolver() ?>
-            $__cacheId = \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($identityResolver['attributes']) ?>);
-        <?php else: ?>
-            $__cacheId = \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($attributes, 'InvalidateCache') ?>);
-        <?php endif; ?>
-        if (\ClassQL\Session::getConnection()->getCache()->has($__cacheId)) {
-            \ClassQL\Session::getConnection()->getCache()->delete($__cacheId);
-        }
+    <?php if ($this->_hasAttribute($attributes, 'InvalidateIdentity')): ?>
+        <?php $identityResolver = $this->_getIdentityResolver() ?>
+        \ClassQL\Session::getConnection()->invalidateCache(
+            \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($identityResolver['attributes']) ?>));
     <?php endif; ?>
+
+    <?php foreach ($this->_getAttributes($attributes, 'InvalidateCache') as $attr): ?>
+        \ClassQL\Session::getConnection()->invalidateCache(
+            \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgsFromArgs($attr['args']) ?>));
+    <?php endforeach; ?>
 
     <?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'value_collection', 'class', 'collection'))):?>
         <?php if ($this->_hasAttribute($attributes, 'CachedProperty')): ?>

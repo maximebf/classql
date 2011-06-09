@@ -273,6 +273,18 @@ class Connection extends PDO
         $this->getCache()->set($id, $data);
         return $data;
     }
+
+    /**
+     * Deletes a cache entry if it exists
+     *
+     * @param string $id
+     */
+    public function invalidateCache($id) 
+    {
+        if ($this->getCache()->has($id)) {
+            $this->getCache()->delete($id);
+        }
+    }
     
     /**
      * Executes a SELECT * on $tableName

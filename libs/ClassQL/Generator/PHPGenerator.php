@@ -385,16 +385,28 @@ class PHPGenerator extends AbstractGenerator
         return array();
     }
 
+    protected function _getAttributes($attributes, $name) {
+        $attrs = array();
+        foreach ($attributes as $attr) {
+            if ($attr['name'] == $name) {
+                $attrs[] = $attr;
+            }
+        }
+        return $attrs;
+    }
+
     protected function _renderCacheIdArgs($attributes, $attributeName = 'CacheId') {
         if (!$this->_hasAttribute($attributes, $attributeName)) {
             return "__CLASS__, __METHOD__, func_get_args()";
         }
-
         $args = $this->_getAttributeArgs($attributes, $attributeName);
+        return $this->_renderCacheIdArgsFromArgs($args);
+    }
+
+    protected function _renderCacheIdArgsFromArgs($args) {
         if (count($args) == 0) {
             throw new Exception("Missing argument for CacheId attribute");
         }
-
         return $this->_renderArgs($args, array_keys($this->_currentOperation['params']));
     }
     
