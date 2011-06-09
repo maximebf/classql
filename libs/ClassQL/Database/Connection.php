@@ -240,7 +240,7 @@ class Connection extends PDO
     {
         $segments = array();
         foreach (func_get_args() as $arg) {
-            if (!is_string($arg)) {
+            if (is_array($arg) || is_object($arg)) {
                 $arg = md5(serialize($arg));
             }
             $segments[] = (string) $arg;
