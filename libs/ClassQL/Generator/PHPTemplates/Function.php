@@ -27,9 +27,9 @@
         $stmt = <?php echo $this->_renderScope($modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 
         <?php if ($this->_hasAttribute($attributes, 'IdentityOnly')): ?>
-            <?php $identityResolver = $this->_getIdentityResolver() ?>
+            <?php list($identityResolverCallback, $identityResolver) = $this->_getIdentityResolver() ?>
             $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-            $data = array_map('<?php echo $this->_resolveClassName($this->_currentClass['name']) . '::' . $identityResolver['name'] ?>', $ids);
+            $data = array_map('<?php echo $identityResolverCallback ?>', $ids);
 
         <?php elseif ($query['returns']['type'] != 'null'): ?>
 
@@ -72,7 +72,7 @@
     <?php endif; ?>
 
     <?php if ($this->_hasAttribute($attributes, 'InvalidateIdentity')): ?>
-        <?php $identityResolver = $this->_getIdentityResolver() ?>
+        <?php list($identityResolverCallback, $identityResolver) = $this->_getIdentityResolver() ?>
         \ClassQL\Session::getConnection()->invalidateCache(
             \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($identityResolver['attributes']) ?>));
     <?php endif; ?>

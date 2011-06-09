@@ -65,6 +65,19 @@ class Arguments extends Context
         );
     }
     
+    public function tokenCallback($value)
+    {
+        if (!empty($this->_arg)) {
+            // only one token possible
+            $this->_syntaxError();
+        }
+        
+        $this->_arg = array(
+            'type' => 'callback', 
+            'value' => $value
+        );
+    }
+    
     public function tokenBoolean($value)
     {
         if (!empty($this->_arg)) {

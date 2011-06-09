@@ -187,6 +187,10 @@ class PHPGenerator extends AbstractGenerator
         if ($item['type'] == 'identifier') {
             return "'" . $this->_resolveClassName($item['value']) . "'";
         }
+        if ($item['type'] == 'callback') {
+            $parts = explode('::', $item['value']);
+            return "'" . $this->_resolveClassName($parts[0]) . "::" . $parts[1] . "'";
+        }
         if ($item['type'] == 'sql') {
             return "new \\ClassQL\\SqlString(\"" . $this->_renderQuery($item['value'], $varsInScope) 
                  . "\", " . $this->_renderQueryParams($item['value'], $varsInScope) . ")";
@@ -416,9 +420,22 @@ class PHPGenerator extends AbstractGenerator
                 if (!in_array('static', $method['modifiers'])) {
                     throw new Exception('Only static method can be identity resolvers');
                 }
-                return $method;
+                $callback = $this->_resolveClassName($this->_currentClass['name']) . '::' . $method['name'];
+                return array($callback, $method);
             }
         }
+
+        if ($this->_hasAttribute($this->_currentClass['attributes'], 'IdentityResolver')) {
+            $args = $this->_getAttributeArgs($this->_currentClass['attributes'], 'IdentityResolver');
+            if (empty($args)) {
+                throw new Exception('Missing argument for IdentityResolver attribute on class');
+            }
+            if ($args[0]['type'] != 'callback') {
+                throw new Exception('Argument 1 of IdentityResolver attribute on class must be a callback');
+            }
+            return array($args[0]['value'], array());
+        }
+
         throw new Exception('No identity resolvers registered for this class');
     }
 }
