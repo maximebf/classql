@@ -188,8 +188,7 @@ class PHPGenerator extends AbstractGenerator
             return "'" . $this->_resolveClassName($item['value']) . "'";
         }
         if ($item['type'] == 'callback') {
-            $parts = explode('::', $item['value']);
-            return "'" . $this->_resolveClassName($parts[0]) . "::" . $parts[1] . "'";
+            return "'" . $this->_resolveCallback($item['value']) . "'";
         }
         if ($item['type'] == 'sql') {
             return "new \\ClassQL\\SqlString(\"" . $this->_renderQuery($item['value'], $varsInScope) 
@@ -349,6 +348,11 @@ class PHPGenerator extends AbstractGenerator
         }
         return $identifier;
     }
+
+    protected function _resolveCallback($callback) {
+        $parts = explode('::', $callback);
+        return $this->_resolveClassName($parts[0]) . "::" . $parts[1];
+    }
     
     protected function _getMappedColumnTypes()
     {
@@ -433,7 +437,7 @@ class PHPGenerator extends AbstractGenerator
             if ($args[0]['type'] != 'callback') {
                 throw new Exception('Argument 1 of IdentityResolver attribute on class must be a callback');
             }
-            return array($args[0]['value'], array());
+            return array($this->_resolveCallback($args[0]['value']), array());
         }
 
         throw new Exception('No identity resolvers registered for this class');
