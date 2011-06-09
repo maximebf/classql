@@ -28,8 +28,14 @@
 
         <?php if ($this->_hasAttribute($attributes, 'IdentityOnly')): ?>
             <?php list($identityResolverCallback, $identityResolver) = $this->_getIdentityResolver() ?>
-            $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-            $data = array_map('<?php echo $identityResolverCallback ?>', $ids);
+            <?php if ($query['returns']['type'] == 'collection'): ?>
+                $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+                $data = array_filter(array_map('<?php echo $identityResolverCallback ?>', $ids));
+            <?php else: ?>
+                $id = $stmt->fetch(\PDO::FETCH_COLUMN, 0);
+                $data = <?php echo $identityResolverCallback ?>($id);
+                $stmt->closeCursor();
+            <?php endif; ?>
 
         <?php elseif ($query['returns']['type'] != 'null'): ?>
 
