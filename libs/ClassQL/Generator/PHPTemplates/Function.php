@@ -27,14 +27,17 @@
         $stmt = <?php echo $this->_renderScope($modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 
         <?php if ($this->_hasAttribute($attributes, 'IdentityOnly')): ?>
+            $data = false;
             <?php list($identityResolverCallback, $identityResolver) = $this->_getIdentityResolver() ?>
             <?php if ($query['returns']['type'] == 'collection'): ?>
-                $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-                $data = array_filter(array_map('<?php echo $identityResolverCallback ?>', $ids));
+                if (($ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0)) !== false) {
+                    $data = array_filter(array_map('<?php echo $identityResolverCallback ?>', $ids));
+                }
             <?php else: ?>
-                $id = $stmt->fetch(\PDO::FETCH_COLUMN, 0);
-                $data = <?php echo $identityResolverCallback ?>($id);
-                $stmt->closeCursor();
+                if (($id = $stmt->fetch(\PDO::FETCH_COLUMN, 0)) !== false) {
+                    $data = <?php echo $identityResolverCallback ?>($id);
+                    $stmt->closeCursor();
+                }
             <?php endif; ?>
 
         <?php elseif ($query['returns']['type'] != 'null'): ?>
