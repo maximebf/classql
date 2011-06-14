@@ -27,13 +27,14 @@
         $stmt = <?php echo $this->_renderScope($modifiers) . $execute_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
 
         <?php if ($this->_hasAttribute($attributes, 'IdentityOnly')): ?>
-            $data = false;
             <?php list($identityResolverCallback, $identityResolver) = $this->_getIdentityResolver() ?>
             <?php if ($query['returns']['type'] == 'collection'): ?>
+                $data = array();
                 if (($ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0)) !== false) {
                     $data = array_filter(array_map('<?php echo $identityResolverCallback ?>', $ids));
                 }
             <?php else: ?>
+                $data = false;
                 if (($id = $stmt->fetch(\PDO::FETCH_COLUMN, 0)) !== false) {
                     $data = <?php echo $identityResolverCallback ?>($id);
                     $stmt->closeCursor();
@@ -49,7 +50,7 @@
                 $data = $stmt->fetch<?php if ($query['returns']['type'] == 'collection') echo 'All' ?>Composite('<?php 
                             echo $query['returns']['value'] ?>', <?php echo $this->_renderMappingInfo($query['returns']) ?>, <?php echo $this->_hasMappedColumns() ? 'true' : 'false' ?>);
             <?php elseif ($query['returns']['type'] == 'collection'): ?>
-                $data = $stmt->fetchAll(\PDO::FETCH_CLASS<?php echo $this->_hasMappedColumns() ? ' | \ClassQL\Database\Connection::FETCH_TYPED' : '' ?>, '<?php echo $query['returns']['value'] ?>');
+                $data = $stmt->fetchAll(\PDO::FETCH_CLASS<?php echo $this->_hasMappedColumns() ? ' | \ClassQL\Database\Connection::FETCH_TYPED' : '' ?>, '<?php echo $query['returns']['value'] ?>') ?: array();
             <?php elseif ($query['returns']['type'] == 'class'): ?>
                 $stmt->setFetchMode(\PDO::FETCH_CLASS<?php echo $this->_hasMappedColumns() ? ' | \ClassQL\Database\Connection::FETCH_TYPED' : '' ?>, '<?php echo $query['returns']['value'] ?>');
                 $data = $stmt->fetch();
@@ -58,7 +59,7 @@
                 $data = $stmt->fetchColumn();
                 $stmt->closeCursor();
             <?php elseif ($query['returns']['type'] == 'value_collection'): ?>
-                $data = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+                $data = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0) ?: array();
             <?php elseif ($query['returns']['type'] == 'last_insert_id'): ?>
                 $this->id = \ClassQL\Session::getConnection()->lastInsertId();
             <?php elseif ($query['returns']['type'] == 'update'): ?>
@@ -77,7 +78,8 @@
     <?php endif; ?>
 
     <?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
-        \ClassQL\Session::getConnection()->getCache()->set($__cacheId, $data);
+        <?php $cacheArgs = $this->_renderArgs($this->_getAttributeArgs($attributes, 'Cached'), array_keys($params)); ?>
+        \ClassQL\Session::getConnection()->getCache()->set($__cacheId, $data<?php if (!empty($cacheArgs)) echo ", $cacheArgs"; ?>);
     <?php endif; ?>
 
     <?php if ($this->_hasAttribute($attributes, 'InvalidateIdentity')): ?>

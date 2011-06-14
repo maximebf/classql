@@ -45,8 +45,9 @@ interface Cache
      * 
      * @param string $key
      * @param string $content
+     * @param int $ttl
      */
-    public function set($key, $content);
+    public function set($key, $content, $ttl = null);
     
     /**
      * Deletes a cached key

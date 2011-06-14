@@ -76,7 +76,7 @@ class File implements Cache
     /**
      * {@inheritDoc}
      */
-    public function set($key, $content)
+    public function set($key, $content, $ttl = null)
     {
         file_put_contents($this->getFilename($key), serialize($content));
     }
