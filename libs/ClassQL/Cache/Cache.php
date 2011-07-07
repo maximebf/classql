@@ -62,7 +62,7 @@ interface Cache
      * @param array $items
      * @param int $ttl
      */
-    public function setMuti($items, $ttl = null);
+    public function setMulti($items, $ttl = null);
     
     /**
      * Deletes a cached key
