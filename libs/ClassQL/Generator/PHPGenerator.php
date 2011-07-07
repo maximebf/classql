@@ -384,6 +384,21 @@ class PHPGenerator extends AbstractGenerator
         return false;
     }
     
+    protected function _getAttribute($attributes, $name, $default = null) {
+        $args = $this->_getAttributeArgs($attributes, $name);
+        if (count($args)) {
+            return array_shift($args);
+        }
+        return $default;
+    }
+    
+    protected function _getAttributeValue($attributes, $name, $default = '') {
+        if ($var = $this->_getAttribute($attributes, $name)) {
+            return trim($var['value'], "'");
+        }
+        return $default;
+    }
+    
     protected function _getAttributeArgs($attributes, $name) {
         foreach ($attributes as $attr) {
             if ($attr['name'] == $name) {

@@ -41,6 +41,13 @@ interface Cache
     public function get($key);
     
     /**
+     * Returns multiple cached content
+     * 
+     * @param array $keys
+     */
+    public function getMulti($keys);
+    
+    /**
      * Adds content to the cache
      * 
      * @param string $key
@@ -48,6 +55,14 @@ interface Cache
      * @param int $ttl
      */
     public function set($key, $content, $ttl = null);
+    
+    /**
+     * Adds multiple content to the cache
+     * 
+     * @param array $items
+     * @param int $ttl
+     */
+    public function setMuti($items, $ttl = null);
     
     /**
      * Deletes a cached key

@@ -70,15 +70,36 @@ class File implements Cache
      */
     public function get($key)
     {
+        if (!$this->has($key)) {
+            return false;
+        }
         return unserialize(file_get_contents($this->getFilename($key)));
     }
     
     /**
      * {@inheritDoc}
      */
-    public function set($key, $content, $ttl = null)
+    public function getMulti($keys)
     {
-        file_put_contents($this->getFilename($key), serialize($content));
+        return array_map(array($this, 'get'), $keys);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function set($key, $value, $ttl = null)
+    {
+        file_put_contents($this->getFilename($key), serialize($value));
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function setMulti($items, $ttl = null)
+    {
+        foreach ($items as $key => $value) {
+            $this->set($key, $value, 0, $ttl);
+        }
     }
     
     /**

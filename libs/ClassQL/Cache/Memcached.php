@@ -22,38 +22,39 @@ namespace ClassQL\Cache;
 /**
  * Memcache backend
  */
-class Memcache implements Cache
+class Memcached implements Cache
 {
-    /** @var \Memcache */
-    protected $_memcache;
+    /** @var \Memcached */
+    protected $_memcached;
     
     /**
-     * @param \Memcache|string $memcache Memcache object or host name
+     * @param \Memcached|string $memcached Memcached object or host name
      * @param int $port
      */
-    public function __construct($memcache = null, $port = 11211)
+    public function __construct($memcached = null, $port = 11211)
     {
-        if ($memcache instanceof \Memcache) {
-            $this->_memcache = $memcache;
+        if ($memcached instanceof \Memcached) {
+            $this->_memcached = $memcached;
         } else if ($memcache !== null) {
-            $this->_memcache = new \Memcache($memcache, $port);
+            $this->_memcached = new \Memcached();
+            $this->_memcached->addServer($memcached, $port);
         }
     }
     
     /**
-     * @param \Memcache $memcache
+     * @param \Memcached $memcached
      */
-    public function setMemcache(\Memcache $memcache)
+    public function setMemcached(\Memcached $memcached)
     {
-        $this->_memcache = $memcache;
+        $this->_memcached = $memcached;
     }
     
     /**
-     * @return \Memcache
+     * @return \Memcached
      */
-    public function getMemcache()
+    public function getMemcached()
     {
-        return $this->_memcache;
+        return $this->_memcached;
     }
     
     /**
@@ -61,7 +62,7 @@ class Memcache implements Cache
      */
     public function has($key)
     {
-        return $this->_memcache->get($key) !== false;
+        return $this->_memcached->get($key) !== false;
     }
     
     /**
@@ -69,15 +70,15 @@ class Memcache implements Cache
      */
     public function get($key)
     {
-        return $this->_memcache->get($key);
+        return $this->_memcached->get($key);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public function getMulti($keys)
-    {
-        return array_map(array($this->_memcache, 'get'), $keys);
+    public function getMulti($keys) {
+        $null = null;
+        return $this->_memcached->getMulti($keys, $null, \Memcached::GET_PRESERVE_ORDER);
     }
     
     /**
@@ -85,17 +86,14 @@ class Memcache implements Cache
      */
     public function set($key, $value, $ttl = null)
     {
-        return $this->_memcache->set($key, $value, 0, $ttl);
+        return $this->_memcached->set($key, $value, 0, $ttl);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public function setMulti($items, $ttl = null)
-    {
-        foreach ($items as $key => $value) {
-            $this->_memcache->set($key, $value, 0, $ttl);
-        }
+    public function setMulti($items, $ttl = null) {
+        $this->_memcached->setMulti($items, $ttl);
     }
     
     /**
@@ -103,6 +101,6 @@ class Memcache implements Cache
      */
     public function delete($key)
     {
-        $this->_memcache->delete($key);
+        $this->_memcached->delete($key);
     }
 }
