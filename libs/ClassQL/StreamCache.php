@@ -97,8 +97,10 @@ class StreamCache
         if (!file_exists($cachedName = self::getCacheName($filename))) {
             return false;
         }
-        return !self::$_checkTimestamp || 
-               filemtime($cachedName) >= filemtime($filename);
+        if (self::$_checkTimestamp) {
+            return filemtime($cachedName) >= filemtime($filename);
+        }
+        return true;
     }
     
     /**
