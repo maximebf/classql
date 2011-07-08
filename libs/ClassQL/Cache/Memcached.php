@@ -84,9 +84,17 @@ class Memcached implements Cache
     /**
      * {@inheritDoc}
      */
+    public function add($key, $value, $ttl = null)
+    {
+        return $this->_memcached->add($key, $value, $ttl);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public function set($key, $value, $ttl = null)
     {
-        return $this->_memcached->set($key, $value, 0, $ttl);
+        return $this->_memcached->set($key, $value, $ttl);
     }
 
     /**

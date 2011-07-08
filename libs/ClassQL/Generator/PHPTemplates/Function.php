@@ -86,7 +86,7 @@
 
     <?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
             <?php $cacheArgs = $this->_renderArgs($this->_getAttributeArgs($attributes, 'Cached'), array_keys($params)); ?>
-            \ClassQL\Session::getConnection()->getCache()->set($__cacheId, $data<?php if (!empty($cacheArgs)) echo ", $cacheArgs"; ?>);
+            \ClassQL\Session::getConnection()->getCache()->add($__cacheId, $data<?php if (!empty($cacheArgs)) echo ", $cacheArgs"; ?>);
         }
     <?php endif; ?>
 

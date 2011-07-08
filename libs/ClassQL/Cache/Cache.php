@@ -51,10 +51,19 @@ interface Cache
      * Adds content to the cache
      * 
      * @param string $key
-     * @param string $content
+     * @param string $value
      * @param int $ttl
      */
-    public function set($key, $content, $ttl = null);
+    public function add($key, $value, $ttl = null);
+    
+    /**
+     * Sets content in the cache
+     * 
+     * @param string $key
+     * @param string $value
+     * @param int $ttl
+     */
+    public function set($key, $value, $ttl = null);
     
     /**
      * Adds multiple content to the cache
