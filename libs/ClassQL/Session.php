@@ -69,7 +69,8 @@ final class Session
             'parser' => null,
             'generator' => null,
             'profiler' => null,
-            'streamcache' => false
+            'streamcache' => false,
+            'streamcache_timestamp' => true
         ), $options);
         
         if ($options['connection'] === null && $options['dsn'] !== null) {
@@ -80,6 +81,7 @@ final class Session
         if ($options['streamcache'] !== false) {
             StreamCache::setEnabled();
             StreamCache::setDirectory($options['streamcache']);
+            StreamCache::setCheckTimestamp($options['streamcache_timestamp']);
         }
         StreamWrapper::register();
         
