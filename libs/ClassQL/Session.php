@@ -72,7 +72,7 @@ final class Session
             'dsn' => null,
             'username' => null,
             'password' => null,
-            'driver_options' => array(),
+            'options' => array(),
             'connection' => null,
             'connections' => array(),
             'cache' => null,
@@ -93,7 +93,7 @@ final class Session
                 'dsn' => $options['dsn'], 
                 'username' => $options['username'], 
                 'password' => $options['password'],
-                'options' => $options['driver_options']
+                'options' => $options['options']
             );
         }
         if ($connection) {
@@ -155,7 +155,7 @@ final class Session
                 self::$_connections[$name]['dsn'], 
                 self::$_connections[$name]['username'], 
                 self::$_connections[$name]['password'],
-                self::$_connections[$name]['options']);
+                self::$_connections[$name]['options'] ?: array());
         }
         return self::$_connections[$name];
     }
