@@ -6,6 +6,7 @@
     */
 <?php endif; ?>
 <?php echo $this->_renderModifiers($modifiers); ?> function <?php echo $name; ?>(<?php echo implode(', ', $params); ?>) {
+    $conn = \ClassQL\Session::getConnection(<?php echo $this->_getConnectionName() ?>);
 
     <?php if ($this->_hasAttribute($attributes, 'IdentityMap')): ?>
         if ($data = \ClassQL\Cache\IdentityMap::get(__CLASS__, array(<?php echo implode(', ', array_keys($params)); ?>))) {
@@ -19,8 +20,8 @@
     <?php endif; ?>
 
     <?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
-        $__cacheId = \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($attributes) ?>);
-        if (!($data = \ClassQL\Session::getConnection()->getCache()->get($__cacheId))) {
+        $__cacheId = $conn->cacheId(<?php echo $this->_renderCacheIdArgs($attributes) ?>);
+        if (!($data = $conn->getCache()->get($__cacheId))) {
     <?php endif; ?>
 
     <?php if (isset($query)): ?>
@@ -68,7 +69,7 @@
             <?php elseif ($query['returns']['type'] == 'value_collection'): ?>
                 $data = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0) ?: array();
             <?php elseif ($query['returns']['type'] == 'last_insert_id'): ?>
-                $this->id = \ClassQL\Session::getConnection()->lastInsertId();
+                $this->id = $conn->lastInsertId();
             <?php elseif ($query['returns']['type'] == 'update'): ?>
                 if (($data = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
                     foreach ($data as $key => $value) {
@@ -86,19 +87,17 @@
 
     <?php if ($this->_hasAttribute($attributes, 'Cached')): ?>
             <?php $cacheArgs = $this->_renderArgs($this->_getAttributeArgs($attributes, 'Cached'), array_keys($params)); ?>
-            \ClassQL\Session::getConnection()->getCache()->add($__cacheId, $data<?php if (!empty($cacheArgs)) echo ", $cacheArgs"; ?>);
+            $conn->getCache()->add($__cacheId, $data<?php if (!empty($cacheArgs)) echo ", $cacheArgs"; ?>);
         }
     <?php endif; ?>
 
     <?php if ($this->_hasAttribute($attributes, 'InvalidateIdentity')): ?>
         <?php list($identityResolverCallback, $identityResolver) = $this->_getIdentityResolver() ?>
-        \ClassQL\Session::getConnection()->invalidateCache(
-            \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($identityResolver['attributes']) ?>));
+        $conn->invalidateCache($conn->cacheId(<?php echo $this->_renderCacheIdArgs($identityResolver['attributes']) ?>));
     <?php endif; ?>
 
     <?php foreach ($this->_getAttributes($attributes, 'InvalidateCache') as $attr): ?>
-        \ClassQL\Session::getConnection()->invalidateCache(
-            \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgsFromArgs($attr['args']) ?>));
+        $conn->invalidateCache($conn->cacheId(<?php echo $this->_renderCacheIdArgsFromArgs($attr['args']) ?>));
     <?php endforeach; ?>
 
     <?php if (!isset($query) || in_array($query['returns']['type'], array('value', 'value_collection', 'class', 'collection'))):?>
@@ -116,13 +115,14 @@
 
     <?php echo $this->_renderModifiers($modifiers); ?>
     function <?php echo $this->_getAttributeValue($attributes, 'CacheMulti') ?>($args) {
+        $conn = \ClassQL\Session::getConnection(<?php echo $this->_getConnectionName() ?>);
         $__cacheIds = array();
         foreach ($args as $arg) {
             $params = array_combine(array('<?php echo implode("', '", array_map(function($v) { return substr($v, 1); }, array_keys($params))) ?>'), $arg);
             extract($params);
-            $__cacheIds[] = \ClassQL\Session::getConnection()->cacheId(<?php echo $this->_renderCacheIdArgs($attributes) ?>);
+            $__cacheIds[] = $conn->cacheId(<?php echo $this->_renderCacheIdArgs($attributes) ?>);
         }
-        $cachedObjects = \ClassQL\Session::getConnection()->getCache()->getMulti($__cacheIds);
+        $cachedObjects = $conn->getCache()->getMulti($__cacheIds);
     }
 
 <?php endif; ?>
@@ -136,7 +136,7 @@
     <?php echo $this->_renderModifiers($modifiers); ?>
     function <?php echo $execute_func_name; ?>(<?php echo implode(', ', $params); ?>) {
         $sqlString = <?php echo $this->_renderScope($modifiers) . $query_func_name; ?>(<?php echo implode(', ', array_keys($params)); ?>);
-        $stmt = \ClassQL\Session::getConnection()->prepare($sqlString->sql);
+        $stmt = \ClassQL\Session::getConnection(<?php echo $this->_getConnectionName() ?>)->prepare($sqlString->sql);
         $stmt->execute($sqlString->params);
         return $stmt;
     }

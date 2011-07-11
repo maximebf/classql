@@ -16,6 +16,16 @@ class FirePHPProfiler implements Profiler
     /**
      * {@inheritDoc}
      */
+    public function log($message) 
+    {
+        if (!headers_sent() && $firephp = FirePHP::getInstance()) {
+            $firephp->log($message);
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public function startQuery($query, $params)
     {
         $this->_currentQuery = array($query, $params, microtime(true));

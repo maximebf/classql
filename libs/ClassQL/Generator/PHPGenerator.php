@@ -457,4 +457,11 @@ class PHPGenerator extends AbstractGenerator
 
         throw new Exception('No identity resolvers registered for this class');
     }
+
+    protected function _getConnectionName() {
+        if ($this->_hasAttribute($this->_currentClass['attributes'], 'Connection')) {
+            return "'" . $this->_getAttributeValue($this->_currentClass['attributes'], 'Connection') . "'";
+        }
+        return '';
+    }
 }

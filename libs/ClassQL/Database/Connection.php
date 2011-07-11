@@ -33,6 +33,8 @@ class Connection extends PDO
     const FETCH_COMPOSITE = 20;
     
     const FETCH_TYPED = 200000;
+
+    const CLASSQL_PROFILER = 'profiler';
     
     /** @var bool */
     protected $_nestedTransactions = true;
@@ -55,6 +57,11 @@ class Connection extends PDO
         $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, 
             array('ClassQL\Database\Statement', array()));
+        
+        if (isset($options[self::CLASSQL_PROFILER])) {
+            $this->setProfiler($options[self::CLASSQL_PROFILER]);
+            $this->_profiler->log('Database connection started');
+        }
     }
     
     /**
@@ -101,6 +108,9 @@ class Connection extends PDO
     public function beginTransaction()
     {
         if (!$this->_nestedTransactions || $this->_transactionCount++ === 0) {
+            if ($this->_profiler) {
+                $this->_profiler->log('Transaction started');
+            }
             parent::beginTransaction();
         }
     }
@@ -111,6 +121,9 @@ class Connection extends PDO
     public function commit()
     {
         if (!$this->_nestedTransactions || $this->_transactionCount-- === 1) {
+            if ($this->_profiler) {
+                $this->_profiler->log('Transaction commited');
+            }
             parent::commit();
         }
     }
@@ -121,6 +134,9 @@ class Connection extends PDO
     public function rollBack()
     {
         if (!$this->_nestedTransactions || $this->_transactionCount-- === 1) {
+            if ($this->_profiler) {
+                $this->_profiler->log('Transaction rollbacked');
+            }
             parent::rollBack();
         }
     }

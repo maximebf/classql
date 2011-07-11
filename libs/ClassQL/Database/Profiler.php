@@ -21,6 +21,8 @@ namespace ClassQL\Database;
 
 interface Profiler
 {
+    public function log($message);
+    
     public function startQuery($query, $params);
     
     public function stopQuery(\Exception $exception = null);

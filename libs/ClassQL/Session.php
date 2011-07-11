@@ -21,15 +21,18 @@ namespace ClassQL;
 
 use ClassQL\Parser\Parser,
     ClassQL\Database\Connection,
-    ClassQL\Generator\Generator;
+    ClassQL\Generator\Generator,
+    ClassQL\Database\Profiler;
 
 /**
  * Central class to manage ClassQL's components
  */
 final class Session
 {
-    /** @var Connection */
-    private static $_connection;
+    public static $defaultConnectionName = 'default';
+
+    /** @var array of Connection */
+    private static $_connections = array();
     
     /** @var Cache */
     private static $_cache;
@@ -40,6 +43,9 @@ final class Session
     /** @var Generator */
     private static $_generator;
     
+    /** @var Profiler */
+    private static $_profiler;
+    
     /**
      * Setups and starts the session
      * 
@@ -48,11 +54,13 @@ final class Session
      *  username: username for Connection
      *  password: password for Connection
      *  connection: a Connection instance (won't use dsn, username and password)
+     *  connections: an associative array to initialize a pool of connections
      *  cache: a Cache instance
      *  parser: a Parser instance
      *  generator: a Generator instance
      *  profiler: a Profiler instance
      *  streamcache: the path where to cache generated files (false to disabled)
+     *  streamcache_timestamp: whether to check for the compiled file timestamp
      *  
      * All keys are optional apart for either the connection or the dsn ones
      * 
@@ -64,7 +72,9 @@ final class Session
             'dsn' => null,
             'username' => null,
             'password' => null,
+            'driver_options' => array(),
             'connection' => null,
+            'connections' => array(),
             'cache' => null,
             'parser' => null,
             'generator' => null,
@@ -72,10 +82,38 @@ final class Session
             'streamcache' => false,
             'streamcache_timestamp' => true
         ), $options);
+
+        if ($options['profiler'] !== null) {
+            self::$_profiler = $options['profiler'];
+        }
         
-        if ($options['connection'] === null && $options['dsn'] !== null) {
-            $options['connection'] = new Connection(
-                $options['dsn'], $options['username'], $options['password']);
+        $connection = $options['connection'];
+        if ($connection === null && $options['dsn'] !== null) {
+            $connection = array(
+                'dsn' => $options['dsn'], 
+                'username' => $options['username'], 
+                'password' => $options['password'],
+                'options' => $options['driver_options']
+            );
+        }
+        if ($connection) {
+            $options['connections'][self::$defaultConnectionName] = $connection;
+        }
+
+        foreach ($options['connections'] as $key => $value) {
+            if ($options['profiler'] !== null) {
+                if (is_string($value)) {
+                    $value = array('dsn' => $value);
+                }
+                if (is_array($value)) {
+                    $value['options'] = array_merge($value['options'] ?: array(), array(
+                        Connection::CLASSQL_PROFILER => $options['profiler']
+                    ));
+                } else {
+                    $value->setProfiler($options['profiler']);
+                }
+            }
+            self::addConnection($key, $value);
         }
         
         if ($options['streamcache'] !== false) {
@@ -85,22 +123,50 @@ final class Session
         }
         StreamWrapper::register();
         
-        self::$_connection = $options['connection'];
         self::$_cache = $options['cache'];
         self::$_parser = $options['parser'] ?: new Parser();
         self::$_generator = $options['generator'] ?: new \ClassQL\Generator\PHPGenerator();
-        
-        if ($options['profiler'] !== null) {
-            self::$_connection->setProfiler($options['profiler']);
+    }
+
+    /**
+     * @param string $name
+     * @param Connection|array $connection
+     */
+    public static function addConnection($name, $connection) 
+    {
+        if (is_string($connection)) {
+            $connection = array('dsn' => $connection);
         }
+        self::$_connections[$name] = $connection;
     }
     
     /**
+     * @param string $name
      * @return Connection
      */
-    public static function getConnection()
+    public static function getConnection($name = null)
     {
-        return self::$_connection;
+        $name = $name ?: self::$defaultConnectionName;
+        if (!isset(self::$_connections[$name])) {
+            throw new Exception('No connections have been registered');
+        }
+        if (is_array(self::$_connections[$name])) {
+            self::$_connections[$name] = new Connection(
+                self::$_connections[$name]['dsn'], 
+                self::$_connections[$name]['username'], 
+                self::$_connections[$name]['password'],
+                self::$_connections[$name]['options']);
+        }
+        return self::$_connections[$name];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getConnections()
+    {
+        $keys = array_keys(self::$_connections);
+        return array_combine($keys, array_map('\ClassQL\Session::getConnection', $keys));
     }
     
     /**
@@ -128,43 +194,11 @@ final class Session
     }
     
     /**
-     * @see Connection::beginTransaction()
+     * @return Generator
      */
-    public static function beginTransaction()
+    public static function getProfiler()
     {
-        return self::$_connection->beginTransaction();
-    }
-    
-    /**
-     * @see Connection::commit()
-     */
-    public static function commitTransaction()
-    {
-        return self::$_connection->commit();
-    }
-    
-    /**
-     * @see Connection::rollBack()
-     */
-    public static function rollbackTransaction()
-    {
-        return self::$_connection->rollBack();
-    }
-    
-    /**
-     * @see Connection::transaction()
-     */
-    public static function transaction(Closure $closure)
-    {
-        return self::$_connection->transaction($closure);
-    }
-    
-    /**
-     * @see Connection::queryParams()
-     */
-    public static function query($query, array $params = array())
-    {
-        return self::$_connection->queryParams($query, $params);
+        return self::$_profiler;
     }
 }
 

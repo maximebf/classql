@@ -52,6 +52,14 @@ class FileProfiler implements Profiler
     /**
      * {@inheritDoc}
      */
+    public function log($message) 
+    {
+        $this->_write($message);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public function startQuery($query, $params)
     {
         $this->_start = microtime(true);
