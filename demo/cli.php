@@ -10,7 +10,7 @@ use ClassQL\Loader,
 // Class loader
 
 require_once __DIR__ . '/../libs/ClassQL/Loader.php';
-Loader::register('Parsec', __DIR__ . '/../vendor/parsec/libs/Parsec');
+Loader::register('Parsec', __DIR__ . '/../vendor/parsec/lib/Parsec');
 Loader::register('ClassQL', __DIR__ . '/../libs/ClassQL');
 Loader::register('Demo\Models', __DIR__ . '/libs/Models', true);
 Loader::register('Demo', __DIR__ . '/libs');
