@@ -48,7 +48,7 @@ class Parser extends StringParser
     public function parse($string, $filename = null)
     {
         $ast = $this->getAST($string, $filename);
-        return $this->_compute($ast);
+        return $this->compute($ast);
     }
     
     /**
@@ -80,13 +80,13 @@ class Parser extends StringParser
      * @param array $ast
      * @return array
      */
-    protected function _compute($ast)
+    protected function compute($ast)
     {
         foreach ($ast['objects'] as &$object) {
             if ($object['type'] == 'class') {
-                $object = $this->_computeModel($object);
+                $object = $this->computeModel($object);
             } else {
-                $object = $this->_computeFunction($object);
+                $object = $this->computeFunction($object);
             }
         }
         
@@ -99,7 +99,7 @@ class Parser extends StringParser
      * @param array $model
      * @return array
      */
-    protected function _computeModel($model)
+    protected function computeModel($model)
     {
         $model = array_merge(array(
             'table' => $model['name'],
@@ -110,7 +110,7 @@ class Parser extends StringParser
         
         foreach ($model['vars'] as &$var) {
             if ($var['type'] === 'sql') {
-                $var['value'] = $this->_replaceVars($var['value'], $model['vars']);
+                $var['value'] = $this->replaceVars($var['value'], $model['vars']);
             }
         }
         
@@ -122,10 +122,10 @@ class Parser extends StringParser
                         'value' => 'self'
                     );
                 }
-                $method['query']['returns'] = $this->_computeReturns($method['query']['returns'], $model['returns']);
+                $method['query']['returns'] = $this->computeReturns($method['query']['returns'], $model['returns']);
                 
                 if (isset($method['query'])) {
-                    $method['query'] = $this->_replaceVars($method['query'], $model['vars']);
+                    $method['query'] = $this->replaceVars($method['query'], $model['vars']);
                 }
             }
         }
@@ -139,13 +139,13 @@ class Parser extends StringParser
      * @param array $function
      * @return array
      */
-    protected function _computeFunction($function)
+    protected function computeFunction($function)
     {
         if (isset($function['query'])) {
             if (!isset($function['query']['returns'])) {
                 $function['query']['returns'] = array('type' => 'object');
             }
-            $function['query']['returns'] = $this->_computeReturns($function['query']['returns']);
+            $function['query']['returns'] = $this->computeReturns($function['query']['returns']);
         }
         return $function;
     }
@@ -157,7 +157,7 @@ class Parser extends StringParser
      * @param string $className
      * @return array
      */
-    protected function _computeReturns($returns, $className = '\stdClass')
+    protected function computeReturns($returns, $className = '\stdClass')
     {
         if ($returns['type'] == 'class' || $returns['type'] == 'collection') {
             if ($returns['value'] == 'self') {
@@ -172,7 +172,7 @@ class Parser extends StringParser
         
         if (isset($returns['with'])) {
             foreach ($returns['with'] as &$with) {
-                $with = $this->_computeReturns($with);
+                $with = $this->computeReturns($with);
             }
         }
         
@@ -186,7 +186,7 @@ class Parser extends StringParser
      * @param array $vars
      * @return array
      */
-    protected function _replaceVars($query, $vars)
+    protected function replaceVars($query, $vars)
     {
         $sql = $query['sql'];
         $queryVars = array();
@@ -209,7 +209,7 @@ class Parser extends StringParser
             foreach ($query['functions'] as &$func) {
                 foreach ($func['args'] as &$arg) {
                     if ($arg['type'] == 'sql') {
-                        $arg['value'] = $this->_replaceVars($arg['value'], $vars);
+                        $arg['value'] = $this->replaceVars($arg['value'], $vars);
                     }
                 }
             }

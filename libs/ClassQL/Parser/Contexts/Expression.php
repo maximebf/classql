@@ -24,31 +24,31 @@ use ClassQL\Parser\CatchAllContext;
 class Expression extends CatchAllContext
 {
     /** @var int */
-    protected $_parenthCount = 1;
+    protected $parenthCount = 1;
     
     public function tokenVariable($value)
     {
-        $this->_value .= str_replace(array('[', ']'), array("['", "']"), $value);
+        $this->value .= str_replace(array('[', ']'), array("['", "']"), $value);
     }
     
     public function tokenArrayOpen()
     {
-        $this->_value .= $this->enterContext('RewriteArray');
+        $this->value .= $this->enterContext('RewriteArray');
     }
     
     public function tokenParenthOpen()
     {
-        $this->_parenthCount++;
-        $this->_value .= '(';
+        $this->parenthCount++;
+        $this->value .= '(';
     }
     
     public function tokenParenthClose()
     {
-        if ($this->_parenthCount-- > 1) {
-            $this->_value .= ')';
+        if ($this->parenthCount-- > 1) {
+            $this->value .= ')';
             return;
         }
         
-        $this->exitContext($this->_value);
+        $this->exitContext($this->value);
     }
 }

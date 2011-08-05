@@ -22,16 +22,26 @@ namespace ClassQL;
 class AliasResolver
 {
     /** @var array */
-    protected static $_aliases = array();
+    protected static $aliases = array();
     
     /**
      * @param string $alias
      * @param mixed $value
      */
-    public static function registerAlias($alias, $value)
+    public static function registerAlias($alias, $value = null)
     {
         $classname = get_called_class();
-        $classname::$_aliases[$alias] = $value;
+        if (!isset(self::$aliases[$classname])) {
+            self::$aliases[$classname] = array();
+        }
+
+        if (is_array($alias)) {
+            foreach ($alias as $k => $v) {
+                self::$aliases[$classname][$k] = $v;
+            }
+        } else {
+            self::$aliases[$classname][$alias] = $value;
+        }
     }
     
     /**
@@ -41,8 +51,9 @@ class AliasResolver
     public static function unregisterAlias($alias)
     {
         $classname = get_called_class();
-        if (isset($classname::$_aliases[$alias])) {
-            unset($classname::$_aliases[$alias]);
+        if (isset(self::$aliases[$classname]) && 
+            isset(self::$aliases[$classname][$alias])) {
+                unset(self::$aliases[$classname][$alias]);
         }
     }
     
@@ -55,8 +66,9 @@ class AliasResolver
     public static function resolveAlias($alias)
     {
         $classname = get_called_class();
-        if (isset($classname::$_aliases[$alias])) {
-            return $classname::$_aliases[$alias];
+        if (isset(self::$aliases[$classname]) && 
+            isset(self::$aliases[$classname][$alias])) {
+                return $classname::$aliases[$alias];
         }
         return null;
     }

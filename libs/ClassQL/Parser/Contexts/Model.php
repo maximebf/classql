@@ -25,56 +25,56 @@ use ClassQL\Parser\ContainerContext,
 class Model extends ContainerContext
 {
     /** @var array */
-    protected $_columns = array();
+    protected $columns = array();
     
     /** @var array */
-    protected $_vars = array();
+    protected $vars = array();
     
     /** @var array */
-    protected $_methods = array();
+    protected $methods = array();
     
     /** @var string */
-    protected $_nextName;
+    protected $nextName;
     
     public function tokenString($value)
     {
-        if ($this->_nextName === null) {
+        if ($this->nextName === null) {
             // first match on a token, means its an identifier for something
             // that has yet to be defined
-            $this->_nextName = $value;
+            $this->nextName = $value;
             return;
         }
         // second match on a string token means a column
         
-        if (isset($this->_columns[$this->_nextName]) || isset($this->_vars[$this->_nextName])) {
-            throw new Exception("Cannot redeclare '$this->_nextName'");
+        if (isset($this->columns[$this->nextName]) || isset($this->vars[$this->nextName])) {
+            throw new Exception("Cannot redeclare '$this->nextName'");
         }
         
-        $this->_columns[$this->_nextName] = array(
-            'name' => $this->_nextName,
+        $this->columns[$this->nextName] = array(
+            'name' => $this->nextName,
             'type' => $value,
-            'sql' => trim($this->_nextName . ' ' . $value . $this->enterContext('Line')),
-            'docComment' => $this->_latestDocComment, 
-            'attributes' => $this->_latestAttributes
+            'sql' => trim($this->nextName . ' ' . $value . $this->enterContext('Line')),
+            'docComment' => $this->latestDocComment, 
+            'attributes' => $this->latestAttributes
         );
         
-        $this->_nextName = null;
-        $this->_resetLatests();
+        $this->nextName = null;
+        $this->resetLatests();
     }
     
     public function tokenVariable($value)
     {
-        if (isset($this->_columns[substr($value, 1)]) || isset($this->_vars[$value])) {
+        if (isset($this->columns[substr($value, 1)]) || isset($this->vars[$value])) {
             throw new Exception("Cannot redeclare '$value'");
         }
         
         if (!$this->getParser()->isNextToken('equal', array('whitespace'))) {
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->getParser()->skipUntil('equal')->skipNext();
+        $this->getParser()->skipUntil('equal');
         
-        $this->_vars[$value] = array_merge(
+        $this->vars[$value] = array_merge(
             $this->enterContext('Variable'),
             array('name' => $value)
         );
@@ -82,51 +82,51 @@ class Model extends ContainerContext
     
     public function tokenParenthOpen()
     {
-        if ($this->_nextName === null) {
-            $this->_syntaxError('parenthOpen');
+        if ($this->nextName === null) {
+            $this->syntaxError('parenthOpen');
         }
         // parenthOpen after a string means a function
         
-        if (isset($this->_methods[$this->_nextName])) {
-            throw new Exception("Cannot redeclare '$this->_nextName()'");
+        if (isset($this->methods[$this->nextName])) {
+            throw new Exception("Cannot redeclare '$this->nextName()'");
         }
         
         // parse parameters (until the next parentClose)
         $params = $this->enterContext('Parameters');
-        $modifiers = $this->_latestModifiers;
+        $modifiers = $this->latestModifiers;
         
         if (!count(array_intersect(array('private', 'public', 'protected'), $modifiers))) {
             $modifiers[] = 'public';
         }
         
-        $this->_methods[$this->_nextName] = array_merge(
+        $this->methods[$this->nextName] = array_merge(
             $this->enterContext('Operation'), // parses the function body
             array(
                 'type' => 'method',
-                'name' => $this->_nextName,
+                'name' => $this->nextName,
                 'params' => $params,
                 'modifiers' => $modifiers,
-                'attributes' => $this->_latestAttributes,
-                'docComment' => $this->_latestDocComment
+                'attributes' => $this->latestAttributes,
+                'docComment' => $this->latestDocComment
             )
         );
         
-        $this->_nextName = null;
-        $this->_resetLatests();
+        $this->nextName = null;
+        $this->resetLatests();
     }
     
     public function tokenCurlyClose()
     {
         $this->exitContext(array(
-            'columns' => $this->_columns,
-            'vars' => $this->_vars,
-            'methods' => $this->_methods
+            'columns' => $this->columns,
+            'vars' => $this->vars,
+            'methods' => $this->methods
         ));
     }
     
     public function _resetLatests()
     {
         parent::_resetLatests();
-        $this->_lastAttribute = null;
+        $this->lastAttribute = null;
     }
 }

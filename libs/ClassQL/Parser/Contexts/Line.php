@@ -25,6 +25,6 @@ class Line extends CatchAllContext
 {
     public function tokenSemiColon()
     {
-        $this->exitContext($this->_value);
+        $this->exitContext($this->value);
     }
 }

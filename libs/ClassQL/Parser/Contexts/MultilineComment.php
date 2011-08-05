@@ -25,6 +25,6 @@ class MultilineComment extends CatchAllContext
 {
     public function tokenCommentClose()
     {
-        $this->exitContext($this->_value);
+        $this->exitContext($this->value);
     }
 }

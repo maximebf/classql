@@ -24,34 +24,34 @@ use ClassQL\Parser\CatchAllContext;
 class Parameters extends CatchAllContext
 {
     /** @var string */
-    protected $_paramName;
+    protected $paramName;
     
     public function tokenVariable($value)
     {
-        if (!empty($this->_paramName)) {
+        if (!empty($this->paramName)) {
             // only one variable possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_paramName = $value;
-        $this->_value .= $value;
+        $this->paramName = $value;
+        $this->value .= $value;
     }
     
     public function tokenArrayOpen()
     {
-        $this->_value .= $this->enterContext('RewriteArray');
+        $this->value .= $this->enterContext('RewriteArray');
     }
     
     public function tokenComma()
     {
         $this->exitContext(array_merge(
-            array($this->_paramName => trim($this->_value)), 
+            array($this->paramName => trim($this->value)), 
             $this->enterContext('Parameters')
         ));
     }
     
     public function tokenParenthClose()
     {
-        $this->exitContext(array($this->_paramName => trim($this->_value)));
+        $this->exitContext(array($this->paramName => trim($this->value)));
     }
 }
