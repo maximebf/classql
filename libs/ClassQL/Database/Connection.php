@@ -261,7 +261,7 @@ class Connection extends PDO
             }
             $segments[] = (string) $arg;
         }
-        return implode(':', $segments);
+        return implode(':', array_filter($segments));
     }
     
     /**
