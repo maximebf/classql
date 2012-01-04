@@ -54,7 +54,7 @@ class StreamWrapper
         if (!file_exists($filename)) {
             return false;
         }
-        
+
         if (StreamCache::isEnabled() && ($this->_content = StreamCache::get($filename)) !== false) {
             return true;
         }

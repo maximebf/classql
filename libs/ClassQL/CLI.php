@@ -38,7 +38,9 @@ class CLI
      */
     public static function run(array $argv = null)
     {
-        $argv = $argv ?: array_slice($_SERVER['argv'], 1);
+        if ($argv === null) {
+            $argv = array_slice($_SERVER['argv'], 1);
+        }
         $args = array();
         $options = array();
         foreach ($argv as $arg) {
