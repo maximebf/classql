@@ -25,28 +25,28 @@ namespace ClassQL\Parser;
 class ContainerContext extends Context
 {
     /** @var array */
-    protected $_latestModifiers = array();
+    protected $latestModifiers = array();
     
     /** @var array */
-    protected $_latestAttributes = array();
+    protected $latestAttributes = array();
     
     /** @var array */
-    protected $_latestDocComment;
+    protected $latestDocComment;
     
     public function tokenModifier($value)
     {
-        $this->_latestModifiers[] = $value;
+        $this->latestModifiers[] = $value;
     }
     
     public function tokenAtWord($value)
     {
         $args = array();
         if ($this->getParser()->isNextToken('parenthOpen', array('whitespace'))) {
-            $this->getParser()->skipUntil('parenthOpen')->skipNext();
+            $this->getParser()->skipUntil('parenthOpen');
             $args = $this->enterContext('Arguments');
         }
         
-        $this->_latestAttributes[] = array(
+        $this->latestAttributes[] = array(
             'name' => substr($value, 1),
             'args' => $args
         );
@@ -54,16 +54,16 @@ class ContainerContext extends Context
     
     public function tokenDocCommentOpen()
     {
-        $this->_latestDocComment = $this->enterContext('MultilineComment');
+        $this->latestDocComment = $this->enterContext('MultilineComment');
     }
     
     /**
      * Resets all latest arrays
      */
-    protected function _resetLatests()
+    protected function resetLatests()
     {
-        $this->_latestModifiers = array();
-        $this->_latestAttributes = array();
-        $this->_latestDocComment = null;
+        $this->latestModifiers = array();
+        $this->latestAttributes = array();
+        $this->latestDocComment = null;
     }
 }

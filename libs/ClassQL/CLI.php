@@ -25,7 +25,7 @@ namespace ClassQL;
 class CLI
 {
     /** @var array */
-    private static $_commands = array(
+    private static $commands = array(
         'schema' => '\ClassQL\CLI\Schema',
         'generate' => '\ClassQL\CLI\Generate',
         'streamcache' => '\ClassQL\CLI\StreamCache'
@@ -62,11 +62,11 @@ class CLI
         }
         
         $command = array_shift($args);
-        if (!isset(self::$_commands[$command])) {
+        if (!isset(self::$commands[$command])) {
             throw new Exception("Command '$command' does not exist");
         }
         
-        $classname = self::$_commands[$command];
+        $classname = self::$commands[$command];
         $instance = new $classname();
         return $instance->execute($args, $options);
     }
@@ -79,7 +79,7 @@ class CLI
      */
     public static function register($command, $class)
     {
-        self::$_commands[$command] = $class;
+        self::$commands[$command] = $class;
     }
     
     /**

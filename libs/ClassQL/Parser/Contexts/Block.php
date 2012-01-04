@@ -24,19 +24,19 @@ use ClassQL\Parser\CatchAllContext;
 class Block extends CatchAllContext
 {
     /** @var int */
-    protected $_curlyCount = 1;
+    protected $curlyCount = 1;
     
     /** @var array */
-    protected $_vars = array();
+    protected $vars = array();
     
     /** @var array */
-    protected $_inlines = array();
+    protected $inlines = array();
     
     public function tokenVariable($value)
     {
         // catches variables from the sql string
-        $this->_vars[] = $value;
-        $this->_value .= $value;
+        $this->vars[] = $value;
+        $this->value .= $value;
     }
     
     public function tokenAtWord($value)
@@ -48,7 +48,7 @@ class Block extends CatchAllContext
         }
         
         if ($this->getParser()->isNextToken('curlyOpen', array('whitespace'))) {
-            $this->getParser()->skipUntil('curlyOpen')->skipNext();
+            $this->getParser()->skipUntil('curlyOpen');
             $args[] = array(
                 'type' => 'sql',
                 'value' => $this->enterContext('Block')
@@ -56,10 +56,10 @@ class Block extends CatchAllContext
         }
         
         $variable = '$func' . uniqid();
-        $this->_vars[] = $variable;
-        $this->_value .= $variable;
+        $this->vars[] = $variable;
+        $this->value .= $variable;
         
-        $this->_inlines[$variable] = array(
+        $this->inlines[$variable] = array(
             'type' => 'function',
             'name' => substr($value, 1),
             'variable' => $variable,
@@ -72,10 +72,10 @@ class Block extends CatchAllContext
         $expression = $this->enterContext('Expression');
         
         $variable = '$expr' . uniqid();
-        $this->_vars[] = $variable;
-        $this->_value .= $variable;
+        $this->vars[] = $variable;
+        $this->value .= $variable;
         
-        $this->_inlines[$variable] = array(
+        $this->inlines[$variable] = array(
             'type' => 'expression',
             'variable' => $variable,
             'expression' => $expression
@@ -85,21 +85,21 @@ class Block extends CatchAllContext
     public function tokenCurlyOpen()
     {
         // counts curly braces to avoid exciting to early
-        $this->_curlyCount++;
-        $this->_value .= '{';
+        $this->curlyCount++;
+        $this->value .= '{';
     }
     
     public function tokenCurlyClose()
     {
-        if ($this->_curlyCount-- > 1) {
-            $this->_value .= '}';
+        if ($this->curlyCount-- > 1) {
+            $this->value .= '}';
             return;
         }
         
         $this->exitContext(array(
-            'sql' => trim($this->_value),
-            'vars' => $this->_vars,
-            'inlines' => $this->_inlines
+            'sql' => trim($this->value),
+            'vars' => $this->vars,
+            'inlines' => $this->inlines
         ));
     }
 }

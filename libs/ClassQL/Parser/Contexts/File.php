@@ -24,52 +24,52 @@ use ClassQL\Parser\ContainerContext;
 class File extends ContainerContext
 {
     /** @var string */
-    protected $_namespace;
+    protected $namespace;
     
     /** @var array */
-    protected $_uses = array();
+    protected $uses = array();
     
     /** @var array */
-    protected $_objects = array();
+    protected $objects = array();
     
     public function tokenNamespace()
     {
-        $this->_namespace = trim($this->enterContext('Line'));
+        $this->namespace = trim($this->enterContext('Line'));
     }
     
     public function tokenUse()
     {
-        $this->_uses = array_merge($this->_uses, $this->enterContext('UseDeclaration'));
+        $this->uses = array_merge($this->uses, $this->enterContext('UseDeclaration'));
     }
     
     public function tokenString($value)
     {
         // a string means an identifier for a class or a function
         
-        if (isset($this->_objects[$value])) {
+        if (isset($this->objects[$value])) {
             throw new Exception("Cannot redeclare '$value()'");
         }
         
-        $this->_objects[$value] = array_merge(
+        $this->objects[$value] = array_merge(
             $this->enterContext('Prototype'),
             array(
                 'name' => $value,
-                'namespace' => $this->_namespace,
-                'modifiers' => $this->_latestModifiers,
-                'attributes' => $this->_latestAttributes,
-                'docComment' => $this->_latestDocComment
+                'namespace' => $this->namespace,
+                'modifiers' => $this->latestModifiers,
+                'attributes' => $this->latestAttributes,
+                'docComment' => $this->latestDocComment
             )
         );
         
-        $this->_resetLatests();
+        $this->resetLatests();
     }
     
     public function tokenEos()
     {
         $this->exitContext(array(
-            'namespace' => $this->_namespace,
-            'uses' => $this->_uses,
-            'objects' => $this->_objects
+            'namespace' => $this->namespace,
+            'uses' => $this->uses,
+            'objects' => $this->objects
         ));
     }
 }

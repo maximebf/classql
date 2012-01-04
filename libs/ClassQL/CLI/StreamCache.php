@@ -41,21 +41,21 @@ class StreamCache extends CLI
     public function executeCompile($args)
     {
         foreach ($args as $filename) {
-            $this->_compile($filename);
+            $this->compile($filename);
         }
     }
     
     public function executeClear($args)
     {
-        \ClassQL\StreamCache::clear();
+        \ClassQL\StreamWrapper::flushCache();
     }
     
-    protected function _compile($filename)
+    protected function compile($filename)
     {
         if (is_dir($filename)) {
             foreach (new DirectoryIterator($filename) as $file) {
                 if (substr($file->getFilename(), 0, 1) !== '.') {
-                    $this->_compile($file->getPathname());
+                    $this->compile($file->getPathname());
                 }
             }
             return;

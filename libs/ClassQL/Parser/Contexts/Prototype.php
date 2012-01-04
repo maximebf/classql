@@ -25,65 +25,65 @@ use ClassQL\Parser\Context,
 class Prototype extends Context
 {
     /** @var array */
-    protected $_proto = array();
+    protected $proto = array();
     
     /** @var string */
-    protected $_nextStringType;
+    protected $nextStringType;
     
     public function tokenAs()
     {
-        $this->_nextStringType = 'table';
+        $this->nextStringType = 'table';
     }
     
     public function tokenExtends()
     {
-        $this->_nextStringType = 'extends';
+        $this->nextStringType = 'extends';
     }
     
     public function tokenImplements()
     {
-        $this->_nextStringType = 'implements';
+        $this->nextStringType = 'implements';
     }
     
     public function tokenReturns()
     {
-        $this->_nextStringType = 'returns';
+        $this->nextStringType = 'returns';
     }
     
     public function tokenString($value)
     {
-        $key = $this->_nextStringType;
-        if (array_key_exists($key, $this->_proto)) {
-            if ($this->_nextStringType != 'implements') {
+        $key = $this->nextStringType;
+        if (array_key_exists($key, $this->proto)) {
+            if ($this->nextStringType != 'implements') {
                 // only implements can have multiple values
-                $this->_syntaxError('string');
+                $this->syntaxError('string');
             }
-            if (!is_array($this->_proto[$key])) {
-                $this->_proto[$key] = array($this->_proto[$key]);
+            if (!is_array($this->proto[$key])) {
+                $this->proto[$key] = array($this->proto[$key]);
             }
-            $this->_proto[$key][] = $value;
+            $this->proto[$key][] = $value;
         } else {
-            $this->_proto[$key] = $value;
+            $this->proto[$key] = $value;
         }
     }
     
     public function tokenComma()
     {
-        if ($this->_nextStringType != 'implements') {
-            $this->_syntaxError('comma');
+        if ($this->nextStringType != 'implements') {
+            $this->syntaxError('comma');
         }
     }
     
     public function tokenParenthOpen()
     {
-        if (!empty($this->_proto)) {
+        if (!empty($this->proto)) {
             throw new Exception('Wrong prototype declaration for function');
         }
         // parenthOpen means it's a function
         
         $params = $this->enterContext('Parameters');
         $func = array_merge(
-            $this->_proto, 
+            $this->proto, 
             $this->enterContext('Operation'),
             array(
                 'type' => 'function',
@@ -96,7 +96,7 @@ class Prototype extends Context
     public function tokenCurlyOpen()
     {
         // curlyOpen means it's a class
-        $model = array_merge($this->_proto, $this->enterContext('Model'));
+        $model = array_merge($this->proto, $this->enterContext('Model'));
         $model['type'] = 'class';
         $this->exitContext($model);
     }

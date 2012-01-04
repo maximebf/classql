@@ -32,19 +32,19 @@ final class Session
     public static $defaultConnectionName = 'default';
 
     /** @var array of Connection */
-    private static $_connections = array();
+    private static $connections = array();
     
     /** @var Cache */
-    private static $_cache;
+    private static $cache;
     
     /** @var Parser */
-    private static $_parser;
+    private static $parser;
     
     /** @var Generator */
-    private static $_generator;
+    private static $generator;
     
     /** @var Profiler */
-    private static $_profiler;
+    private static $profiler;
     
     /**
      * Setups and starts the session
@@ -84,7 +84,7 @@ final class Session
         ), $options);
 
         if ($options['profiler'] !== null) {
-            self::$_profiler = $options['profiler'];
+            self::$profiler = $options['profiler'];
         }
         
         $connection = $options['connection'];
@@ -117,15 +117,17 @@ final class Session
         }
         
         if ($options['streamcache'] !== false) {
-            StreamCache::setEnabled();
-            StreamCache::setDirectory($options['streamcache']);
-            StreamCache::setCheckTimestamp($options['streamcache_timestamp']);
+            StreamWrapper::setCacheOptions(array(
+                'enabled' => true,
+                'dir' => $options['streamcache'],
+                'check_timestamp' => $options['streamcache_timestamp']
+            ));
         }
         StreamWrapper::register();
         
-        self::$_cache = $options['cache'];
-        self::$_parser = $options['parser'] ?: new Parser();
-        self::$_generator = $options['generator'] ?: new \ClassQL\Generator\PHPGenerator();
+        self::$cache = $options['cache'];
+        self::$parser = $options['parser'] ?: new Parser();
+        self::$generator = $options['generator'] ?: new \ClassQL\Generator\PHPGenerator();
     }
 
     /**
@@ -137,7 +139,7 @@ final class Session
         if (is_string($connection)) {
             $connection = array('dsn' => $connection);
         }
-        self::$_connections[$name] = $connection;
+        self::$connections[$name] = $connection;
     }
     
     /**
@@ -147,17 +149,17 @@ final class Session
     public static function getConnection($name = null)
     {
         $name = $name ?: self::$defaultConnectionName;
-        if (!isset(self::$_connections[$name])) {
+        if (!isset(self::$connections[$name])) {
             throw new Exception('No connections have been registered');
         }
-        if (is_array(self::$_connections[$name])) {
-            self::$_connections[$name] = new Connection(
-                self::$_connections[$name]['dsn'], 
-                self::$_connections[$name]['username'], 
-                self::$_connections[$name]['password'],
-                self::$_connections[$name]['options'] ?: array());
+        if (is_array(self::$connections[$name])) {
+            self::$connections[$name] = new Connection(
+                self::$connections[$name]['dsn'], 
+                self::$connections[$name]['username'], 
+                self::$connections[$name]['password'],
+                self::$connections[$name]['options'] ?: array());
         }
-        return self::$_connections[$name];
+        return self::$connections[$name];
     }
 
     /**
@@ -165,7 +167,7 @@ final class Session
      */
     public static function getConnections()
     {
-        $keys = array_keys(self::$_connections);
+        $keys = array_keys(self::$connections);
         return array_combine($keys, array_map('\ClassQL\Session::getConnection', $keys));
     }
     
@@ -174,7 +176,7 @@ final class Session
      */
     public static function getCache()
     {
-        return self::$_cache;
+        return self::$cache;
     }
     
     /**
@@ -182,7 +184,7 @@ final class Session
      */
     public static function getParser()
     {
-        return self::$_parser;
+        return self::$parser;
     }
     
     /**
@@ -190,7 +192,7 @@ final class Session
      */
     public static function getGenerator()
     {
-        return self::$_generator;
+        return self::$generator;
     }
     
     /**
@@ -198,7 +200,7 @@ final class Session
      */
     public static function getProfiler()
     {
-        return self::$_profiler;
+        return self::$profiler;
     }
 }
 

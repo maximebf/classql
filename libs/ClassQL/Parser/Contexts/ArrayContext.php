@@ -25,13 +25,13 @@ use ClassQL\Parser\Context,
 class ArrayContext extends Arguments
 {
     /** @var string */
-    protected $_key = null;
+    protected $key = null;
     
     public function tokenString($value)
     {
         if ($this->getParser()->isNextToken('arrayAssoc', array('whitespace'))) {
-            $this->getParser()->skipUntil('arrayAssoc')->skipNext();
-            $this->_key = $value;
+            $this->getParser()->skipUntil('arrayAssoc');
+            $this->key = $value;
         } else {
             parent::tokenString($value);
         }
@@ -39,22 +39,22 @@ class ArrayContext extends Arguments
     
     public function tokenComma()
     {
-        if ($this->_key !== null) {
-            $this->_arg['key'] = $this->_key;
+        if ($this->key !== null) {
+            $this->arg['key'] = $this->key;
         }
-        $this->exitContext(array_merge(array($this->_arg), $this->enterContext('ArrayContext')));
+        $this->exitContext(array_merge(array($this->arg), $this->enterContext('ArrayContext')));
     }
     
     public function tokenArrayClose()
     {
-        if ($this->_key !== null) {
-            $this->_arg['key'] = $this->_key;
+        if ($this->key !== null) {
+            $this->arg['key'] = $this->key;
         }
-        $this->exitContext(array($this->_arg));
+        $this->exitContext(array($this->arg));
     }
     
     public function tokenParenthClose()
     {
-        $this->_syntaxError('parenthClose');
+        $this->syntaxError('parenthClose');
     }
 }

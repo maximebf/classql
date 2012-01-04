@@ -19,10 +19,7 @@
  
 namespace ClassQL;
 
-class InlineFunctions extends AliasResolver
-{
-    /** @var array */
-    protected static $_aliases = array(
+InlineFunctions::registerAlias(array(
         'if' => '\ClassQL\InlineFunctions::test',
         'switch' => '\ClassQL\InlineFunctions::switchArray',
         'implode' => '\ClassQL\InlineFunctions::implode',
@@ -35,8 +32,10 @@ class InlineFunctions extends AliasResolver
         'columns' => '\ClassQL\InlineFunctions::columns',
         'insert' => '\ClassQL\InlineFunctions::insert',
         'update' => '\ClassQL\InlineFunctions::update'
-    );
-    
+));
+
+class InlineFunctions extends AliasResolver
+{
     public static function test($expression, $true, $false = null)
     {
         if ($expression) {

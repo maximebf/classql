@@ -19,38 +19,23 @@
  
 namespace ClassQL;
 
+use MetaP\ClassLoader;
+
 /**
  * Loads classes and models
  */
 class Loader
 {
     /**
-     * Registers and autoloader for the given namespace
-     * 
-     * Classes will be searched in the $dir folder. If $parse
-     * is set to true, the classql:// proto will be used.
+     * Classes from the give $namespace will be auto included
+     * using the classql:// protocol and the .cql file extension.
      * 
      * @param string $namespace
      * @param string $dir
      * @param bool $parse
      */
-    public static function register($namespace, $dir, $parse = false)
+    public static function register($namespace, $dir)
     {
-        $namespade = trim($namespace, '\\');
-        spl_autoload_register(function($classname) use ($namespace, $dir, $parse) {
-            $classname = ltrim($classname, '\\');
-            if (substr($classname, 0, strlen($namespace)) !== $namespace) {
-                return false;
-            }
-            
-            $filename = $dir . str_replace('\\', DIRECTORY_SEPARATOR, substr($classname, 
-                        strlen($namespace))) . ($parse ? '.cql' : '.php');
-                      
-            if ($parse) {
-                $filename = 'classql://' . $filename;
-            }
-            
-            require_once $filename;
-        });
+        ClassLoader::registerNS($namespace, $dir, 'classql://', '.cql');
     }
 }

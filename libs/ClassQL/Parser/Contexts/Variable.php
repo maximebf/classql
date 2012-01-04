@@ -24,18 +24,18 @@ use ClassQL\Parser\CatchAllContext;
 class Variable extends CatchAllContext
 {
     /** @var array */
-    protected $_vars = array();
+    protected $vars = array();
     
     /** @var mixed */
-    protected $_array = false;
+    protected $array = false;
     
     public function tokenArrayOpen()
     {
-        if (trim($this->_value) != '') {
+        if (trim($this->value) != '') {
             return;
         }
         
-        $this->_array = array(
+        $this->array = array(
             'type' => 'array',
             'value' => $this->enterContext('ArrayContext')
         );
@@ -44,27 +44,27 @@ class Variable extends CatchAllContext
     public function tokenVariable($value)
     {
         // catches variables from the sql string
-        $this->_vars[] = $value;
-        $this->_value .= $value;
+        $this->vars[] = $value;
+        $this->value .= $value;
     }
     
     public function tokenEol()
     {
-        if ($this->_array !== false) {
-            $this->exitContext($this->_array);
+        if ($this->array !== false) {
+            $this->exitContext($this->array);
         }
     }
     
     public function tokenSemiColon()
     {
-        if ($this->_array !== false) {
-            $this->exitContext($this->_array);
+        if ($this->array !== false) {
+            $this->exitContext($this->array);
         } else {
             $this->exitContext(array(
                 'type' => 'sql',
                 'value' => array(
-                    'sql' => trim($this->_value),
-                    'vars' => $this->_vars
+                    'sql' => trim($this->value),
+                    'vars' => $this->vars
                 )
             ));
         }

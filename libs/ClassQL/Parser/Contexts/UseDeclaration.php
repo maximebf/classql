@@ -24,23 +24,23 @@ use ClassQL\Parser\Context;
 class UseDeclaration extends Context
 {
     /** @var array */
-    protected $_uses = array();
+    protected $uses = array();
     
     public function tokenString($value)
     {
-        if (!empty($this->_uses)) {
-            $this->_syntaxError('string');
+        if (!empty($this->uses)) {
+            $this->syntaxError('string');
         }
-        $this->_uses[] = $value;
+        $this->uses[] = $value;
     }
     
     public function tokenComma()
     {
-        $this->exitContext(array_merge($this->_uses, $this->enterContext('UseDeclaration')));
+        $this->exitContext(array_merge($this->uses, $this->enterContext('UseDeclaration')));
     }
     
     public function tokenSemiColon()
     {
-        $this->exitContext($this->_uses);
+        $this->exitContext($this->uses);
     }
 }

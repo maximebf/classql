@@ -25,7 +25,7 @@ namespace ClassQL\Cache;
 class File implements Cache
 {
     /** @var string */
-    protected $_directory;
+    protected $directory;
     
     /**
      * @param string $dir
@@ -46,7 +46,7 @@ class File implements Cache
             throw new \ClassQL\Exception("Path '$dir' must be a directory");
         }
         
-        $this->_directory = rtrim($dir, DIRECTORY_SEPARATOR);
+        $this->directory = rtrim($dir, DIRECTORY_SEPARATOR);
     }
     
     /**
@@ -54,7 +54,7 @@ class File implements Cache
      */
     public function getDirectory()
     {
-        return $this->_directory;
+        return $this->directory;
     }
     
     /**
@@ -128,6 +128,6 @@ class File implements Cache
      */
     public function getFilename($key)
     {
-        return $this->_directory . DIRECTORY_SEPARATOR . $key;
+        return $this->directory . DIRECTORY_SEPARATOR . $key;
     }
 }

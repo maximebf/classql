@@ -26,19 +26,19 @@ class RewriteArray extends CatchAllContext
     public function tokenString($value)
     {
         if ($this->getParser()->isNextToken('arrayAssoc', array('whitespace'))) {
-            $this->_value .= "'$value'";
+            $this->value .= "'$value'";
         } else {
-            $this->_value .= $value;
+            $this->value .= $value;
         }
     }
     
     public function tokenArrayOpen()
     {
-        $this->_value .= $this->enterContext('RewriteArray');
+        $this->value .= $this->enterContext('RewriteArray');
     }
     
     public function tokenArrayClose()
     {
-        $this->exitContext(sprintf('array(%s)', $this->_value));
+        $this->exitContext(sprintf('array(%s)', $this->value));
     }
 }

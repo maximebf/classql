@@ -24,28 +24,28 @@ use ClassQL\Parser\Context;
 class ReturnsGroup extends Context
 {
     /** @var array */
-    protected $_return;
+    protected $return;
     
     public function tokenNull()
     {
-        $this->_return = array('type' => 'null');
+        $this->return = array('type' => 'null');
     }
     
     public function tokenWildcard()
     {
-        $this->_return = array('type' => 'object');
+        $this->return = array('type' => 'object');
     }
     
     public function tokenString($value)
     {
         if (in_array($value, array('update', 'last_insert_id'))) {
-            $this->_return = array('type' => $value);
+            $this->return = array('type' => $value);
         } else {
             $property = $value;
             if ($this->getParser()->isNextToken('opreturns')) {
                 $this->getParser()->skipNext();
                 if (!$this->getParser()->isNextToken('string')) {
-                    $this->_syntaxError('opreturns');
+                    $this->syntaxError('opreturns');
                 }
                 $value = $this->getParser()->getNextTokenValue();
                 $this->getParser()->skipNext();
@@ -54,16 +54,16 @@ class ReturnsGroup extends Context
             $collection = false;
             if ($this->getParser()->isNextToken('arrayOpen')) {
                 $collection = true;
-                $this->getParser()->skipUntil('arrayClose')->skipNext();
+                $this->getParser()->skipUntil('arrayClose');
             }
             
             if ($value === 'value') {
-                $this->_return = array(
+                $this->return = array(
                     'type' => $collection ? 'value_collection' : 'value',
                     'property' => $property
                 );
             } else {
-                $this->_return = array(
+                $this->return = array(
                     'type' => $collection ? 'collection' : 'class',
                     'value' => $value,
                     'property' => $property
@@ -74,23 +74,23 @@ class ReturnsGroup extends Context
     
     public function tokenParenthOpen()
     {
-        if (!empty($this->_return)) {
-            $this->_syntaxError('parenthOpen');
+        if (!empty($this->return)) {
+            $this->syntaxError('parenthOpen');
         }
         $returns = $this->enterContext('ReturnsGroup');
-        $this->_return = $returns['returns'];
+        $this->return = $returns['returns'];
     }
     
     public function tokenParenthClose()
     {
-        $this->exitContext(array('returns' => $this->_return));
+        $this->exitContext(array('returns' => $this->return));
     }
     
     public function tokenWith()
     {
         $query = $this->enterContext('ReturnsWith');
-        $this->_return['with'] = $query['returns'];
-        $query['returns'] = $this->_return;
+        $this->return['with'] = $query['returns'];
+        $query['returns'] = $this->return;
         $this->exitContext($query);
     }
 }

@@ -42,12 +42,12 @@ class Context extends BaseContext
     
     /**
      * Throws a syntax error for all undefined token
-
+     *
      * @param string $method
      * @param array $args
      */
     public function __call($method, $args)
     {
-        $this->_syntaxError();
+        $this->syntaxError();
     }
 }

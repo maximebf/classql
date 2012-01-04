@@ -24,16 +24,16 @@ use ClassQL\Parser\Context;
 class Arguments extends Context
 {
     /** @var array */
-    protected $_arg;
+    protected $arg;
     
     public function tokenValue($value)
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'scalar', 
             'value' => $value
         );
@@ -41,12 +41,12 @@ class Arguments extends Context
     
     public function tokenString($value)
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'identifier', 
             'value' => $value
         );
@@ -54,12 +54,12 @@ class Arguments extends Context
     
     public function tokenVariable($value)
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'variable', 
             'value' => $value
         );
@@ -67,12 +67,12 @@ class Arguments extends Context
     
     public function tokenCallback($value)
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'callback', 
             'value' => $value
         );
@@ -80,12 +80,12 @@ class Arguments extends Context
     
     public function tokenBoolean($value)
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'boolean', 
             'value' => $value
         );
@@ -93,12 +93,12 @@ class Arguments extends Context
     
     public function tokenNull($value)
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'null',
             'value' => $value
         );
@@ -113,14 +113,14 @@ class Arguments extends Context
         }
         
         if ($this->getParser()->isNextToken('curlyOpen', array('whitespace'))) {
-            $this->getParser()->skipUntil('curlyOpen')->skipNext();
+            $this->getParser()->skipUntil('curlyOpen');
             $args[] = array(
                 'type' => 'sql',
                 'value' => $this->enterContext('Block')
             );
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'function', 
             'value' => array(
                 'name' => substr($value, 1),
@@ -131,12 +131,12 @@ class Arguments extends Context
     
     public function tokenExpression()
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'expression', 
             'value' => $this->enterContext('Expression')
         );
@@ -144,12 +144,12 @@ class Arguments extends Context
     
     public function tokenCurlyOpen()
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'sql', 
             'value' => $this->enterContext('Block')
         );
@@ -157,12 +157,12 @@ class Arguments extends Context
     
     public function tokenArrayOpen()
     {
-        if (!empty($this->_arg)) {
+        if (!empty($this->arg)) {
             // only one token possible
-            $this->_syntaxError();
+            $this->syntaxError();
         }
         
-        $this->_arg = array(
+        $this->arg = array(
             'type' => 'array',
             'value' => $this->enterContext('ArrayContext')
         );
@@ -171,13 +171,13 @@ class Arguments extends Context
     public function tokenComma()
     {
         $this->exitContext(array_merge(
-            array($this->_arg), 
+            array($this->arg), 
             $this->enterContext('Arguments')
         ));
     }
     
     public function tokenParenthClose()
     {
-        $this->exitContext(array($this->_arg));
+        $this->exitContext(array($this->arg));
     }
 }

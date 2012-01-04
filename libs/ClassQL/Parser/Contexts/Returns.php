@@ -26,7 +26,7 @@ class Returns extends ReturnsGroup
     public function tokenCurlyOpen()
     {
         $query = $this->enterContext('Block');
-        $query['returns'] = $this->_return;
+        $query['returns'] = $this->return;
         $this->exitContext($query);
     }
 }
